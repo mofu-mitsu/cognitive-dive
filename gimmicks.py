@@ -107,8 +107,7 @@ def run_p1_ni_flash():
             if st.button("決定！"):
                 if "言葉" in ans or "ことば" in ans or "コトバ" in ans:
                     time_taken = time.time() - st.session_state.ni_start
-                    # ★ タイム緩和：20秒以内なら神速ボーナス！
-                    if st.session_state.ni_hints == 0 and time_taken < 20.0: st.session_state.scores["Ni"] += 6
+                    if st.session_state.ni_hints == 0 and time_taken < 10.0: st.session_state.scores["Ni"] += 6
                     elif st.session_state.ni_hints == 0: st.session_state.scores["Ni"] += 4
                     else: st.session_state.scores["Ni"] += 2
                     add_log(f"【Ni】閃きテスト正解！ ({time_taken:.1f}秒 / ヒント{st.session_state.ni_hints}回)")
@@ -137,7 +136,6 @@ def run_p2_ni_pattern():
             add_log(f"【Ni】高度な抽象化テストに大正解！(回答: {ans} / {time_taken:.1f}秒)")
             st.success("素晴らしい！現象の裏に潜む本質的な法則を完璧に捉えました！")
         elif any(k in ans for k in common_ni_keywords):
-            # ★ タイム緩和：12秒以内なら直感としてボーナス！
             if time_taken < 12.0:
                 st.session_state.scores["Ni"] += 6
                 add_log(f"【Ni】神速の直感で抽象化テストに正解！(回答: {ans} / {time_taken:.1f}秒)")
@@ -312,7 +310,7 @@ def run_p6_se_color():
         
     if choice:
         if choice == ans_key:
-            st.session_state.scores["Se"] += 0.5
+            st.session_state.scores["Se"] += 0.5  
             add_log("【Se】色彩感覚テスト: 正解")
             st.success("大正解！")
         else:
@@ -353,8 +351,8 @@ def run_p7_se_games():
         st.success(st.session_state.thrill_result)
         if st.button("次へ進む"):
             add_log(f"【Se】陽キャバスを {st.session_state.drum_count}回 叩いた")
-            # ★ 陽キャバス上限大解放！ 1回0.2点、最大10点（50回叩きでMAX）
-            st.session_state.scores["Se"] += min(st.session_state.drum_count * 0.2, 10.0)
+            # ★ Se上限ストッパー完全撤廃！叩いた分だけ無限に伸びる！
+            st.session_state.scores["Se"] += st.session_state.drum_count * 0.1
             next_page()
 
 def run_p8_imomushi():
@@ -368,7 +366,7 @@ def run_p8_imomushi():
             st.session_state.imomushi_clicks += 1
             st.rerun()
         if clicks == 0: st.caption("「……（お散歩中）」")
-        elif clicks < 5: st.caption("「何だね？僕は考え事に耽りながら散歩中だ。」")
+        elif clicks < 5: st.caption("「何だね？私は考え事に耽りながら散歩中だ。」")
         elif clicks < 10: st.caption("「おいおい、むやみに触らないでくれたまえ。」")
         elif clicks < 15: st.caption("「……お前僕を怒らせたいのか？」")
         elif clicks < 25: st.caption("「しつこいな！お前、SLEか！？やめろ！」")
@@ -424,9 +422,9 @@ def run_p9_emotion():
 
     st.divider()
     if st.button("満足したので次へ進む"):
-        # ★ FeとFiの上限大解放！10点（MAX）まで伸びるように！
-        st.session_state.scores["Fe"] += min(st.session_state.fe_empathy * 0.2, 10.0)
-        st.session_state.scores["Fi"] += min(st.session_state.fi_destroyed_count * 1.0, 10.0)
+        # ★ Fe(0.5点) / Fi(1.0点) ストッパー完全撤廃！青天井で伸びる！
+        st.session_state.scores["Fe"] += st.session_state.fe_empathy * 0.5
+        st.session_state.scores["Fi"] += st.session_state.fi_destroyed_count * 0.5
         add_log(f"【Fe】子犬に {st.session_state.fe_empathy}回 心を寄せた")
         add_log(f"【Fi】悪口を {st.session_state.fi_destroyed_count}個 撃ち落とした")
         next_page()
