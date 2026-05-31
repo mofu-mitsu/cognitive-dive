@@ -392,7 +392,7 @@ def run_p8_imomushi():
 def run_p9_emotion():
     st.header("💖 Part 9: 感情の防衛と共感")
     
-    st.subheader("📺 共感テスト")
+    st.subheader("📺 共感テスト (Fe)")
     st.write("【状況】テレビで、雨に濡れて震える可哀想な子犬の映像が流れています……")
     st.write("この子犬に対して、何かしてあげたい・感情が動かされたならボタンを押してください。")
     if st.button("🥺 心を寄せる（連打可能）"):
@@ -404,7 +404,7 @@ def run_p9_emotion():
         
     st.divider()
     
-    st.subheader("🛡️ 自己防衛シューティング")
+    st.subheader("🛡️ 自己防衛シューティング (Fi)")
     st.write("画面にあなたに向かってくる『悪意のクソ文句』があります。クリックして撃ち落としてください！")
     
     cols = st.columns(5)
@@ -422,9 +422,10 @@ def run_p9_emotion():
 
     st.divider()
     if st.button("満足したので次へ進む"):
-        # ★ Fe(0.5点) / Fi(1.0点) ストッパー完全撤廃！青天井で伸びる！
+        # ★ FeもFiも完全に青天井！ 1回につき0.5点！ ストッパー(min)完全削除！ ★
         st.session_state.scores["Fe"] += st.session_state.fe_empathy * 0.5
         st.session_state.scores["Fi"] += st.session_state.fi_destroyed_count * 0.5
+        
         add_log(f"【Fe】子犬に {st.session_state.fe_empathy}回 心を寄せた")
         add_log(f"【Fi】悪口を {st.session_state.fi_destroyed_count}個 撃ち落とした")
         next_page()
