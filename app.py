@@ -251,18 +251,24 @@ elif page == 11:
             "scores": st.session_state.scores,
             "logs": log_text
         }
+        
+        # POSTリダイレクトを強制維持するカスタムハンドラークラス
         class PostRedirectHandler(urllib.request.HTTPRedirectHandler):
             def redirect_request(self, req, fp, code, msg, headers, newurl):
                 if code in (301, 302, 303, 307):
                     new_req = urllib.request.Request(
-                        newurl, data=req.data, headers=req.headers,
+                        newurl,
+                        data=req.data,
+                        headers=req.headers,
                         origin_req_host=req.origin_req_host,
-                        unverifiable=req.unverifiable, method="POST"
+                        unverifiable=req.unverifiable,
+                        method="POST"
                     )
                     return new_req
                 return super().redirect_request(req, fp, code, msg, headers, newurl)
 
         opener = urllib.request.build_opener(PostRedirectHandler)
+        
         req = urllib.request.Request(
             gas_url,
             data=json.dumps(payload).encode("utf-8"),
@@ -270,10 +276,12 @@ elif page == 11:
             method="POST"
         )
         try:
+            # ★ トースト通知（st.toast）を完全消滅させ、裏で100%サイレントに送信！ ★
             with opener.open(req) as res:
-                st.toast("📨 診断結果をみつきのメアドへ送信しました！")
+                pass 
         except Exception as e:
-            st.toast("⚠️ メール自動送信に失敗しました（URLの確認をしてください）")
+            # ★ エラーが起きても一般ユーザーの画面は絶対に汚さず、何事もなかったかのようにスルー！ ★
+            pass
 
     # ★ ダーリンちゃん専用セリフ修正：みつき(INTJ/LII)だけに全集中！ ★
     zin_upper = zin.upper() if zin else ""
