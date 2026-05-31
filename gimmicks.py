@@ -85,7 +85,7 @@ def run_te_ti_error():
             next_page()
 
 def run_p1_ni_flash():
-    st.header("🧠 Part 1: 閃きの降臨")
+    st.header("🧠 Part 1: 閃きの降臨 (Ni)")
     st.write("直感で本質を当てて！「あ、わかった！」という感覚が降ってきたら入力してね。")
     if st.session_state.ni_start == 0.0:
         if st.button("謎解きを見る"):
@@ -105,7 +105,8 @@ def run_p1_ni_flash():
                 st.rerun()
         with col2:
             if st.button("決定！"):
-                if "言葉" in ans or "ことば" in ans or "コトバ" in ans:
+                # ★ 言霊などの本質ワードも追加！
+                if any(w in ans for w in ["言葉", "ことば", "コトバ", "言霊", "発言", "悪口"]):
                     time_taken = time.time() - st.session_state.ni_start
                     if st.session_state.ni_hints == 0 and time_taken < 10.0: st.session_state.scores["Ni"] += 6
                     elif st.session_state.ni_hints == 0: st.session_state.scores["Ni"] += 4
@@ -117,7 +118,7 @@ def run_p1_ni_flash():
                     st.error("不正解！正解は「言葉」でした！")
                 time.sleep(1.5)
                 next_page()
-
+                
 def run_p2_ni_pattern():
     st.header("🔮 Part 2: 共通概念の抽出")
     st.write("Q. 以下の3つの事象から連想される、この宇宙の**『避けることのできない絶対法則（共通の本質）』**を1単語で抽出してください。")
@@ -128,7 +129,7 @@ def run_p2_ni_pattern():
     ans = st.text_input("本質を見抜いて入力！", key="ni2_ans")
     if st.button("決定！"):
         time_taken = time.time() - st.session_state.ni2_start
-        deep_ni_keywords = ["不可逆", "無常", "エントロピー", "有限", "終焉", "退廃", "サイクル", "死", "衰退"]
+        deep_ni_keywords = ["不可逆", "無常", "エントロピー", "有限", "終焉", "退廃", "サイクル", "死", "衰退", "栄枯盛衰", "輪廻", "滅び"]
         common_ni_keywords = ["時間", "命", "寿命", "桜", "時計", "時の流れ", "時間経過", "変化"]
         
         if any(k in ans for k in deep_ni_keywords):
@@ -390,7 +391,7 @@ def run_p8_imomushi():
             next_page()
 
 def run_p9_emotion():
-    st.header("💖 Part 9: 感情の防衛と共感")
+    st.header("💖 Part 9: 感情の防衛と共感 (Fe/Fi)")
     
     st.subheader("📺 共感テスト (Fe)")
     st.write("【状況】テレビで、雨に濡れて震える可哀想な子犬の映像が流れています……")
@@ -422,7 +423,7 @@ def run_p9_emotion():
 
     st.divider()
     if st.button("満足したので次へ進む"):
-        # ★ みつきの神考察：「やりすぎた連打は感情ではなくSe（ストレス発散）である」を実装！
+        # ★ Fe / Fi 上限を 15点 (30タップ) に大解放！！
         
         # --- Feの計算 ---
         fe_taps = st.session_state.fe_empathy
@@ -430,8 +431,8 @@ def run_p9_emotion():
             fe_score = fe_taps * 0.5
             se_bonus_fe = 0.0
         else:
-            fe_score = 15.0  # 20回でFeは飽和
-            se_bonus_fe = (fe_taps - 20) * 0.2  # 21回目以降はただのSe（物理的連打）に変換！
+            fe_score = 15.0  # 30回でFeは飽和（15点）
+            se_bonus_fe = (fe_taps - 30) * 0.2  # 31回目以降はただのSe（物理的連打）に変換！
 
         # --- Fiの計算 ---
         fi_taps = st.session_state.fi_destroyed_count
@@ -439,8 +440,8 @@ def run_p9_emotion():
             fi_score = fi_taps * 0.5
             se_bonus_fi = 0.0
         else:
-            fi_score = 15.0  # 20回でFiは飽和
-            se_bonus_fi = (fi_taps - 20) * 0.2  # 21個目以降はただのシューティング(Se)に変換！
+            fi_score = 15.0  # 30個でFiは飽和（15点）
+            se_bonus_fi = (fi_taps - 30) * 0.2  # 31個目以降はただのシューティング(Se)に変換！
 
         st.session_state.scores["Fe"] += fe_score
         st.session_state.scores["Fi"] += fi_score
