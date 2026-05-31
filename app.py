@@ -9,9 +9,19 @@ from PIL import Image, ImageDraw
 
 st.set_page_config(page_title="認知機能ダイブ・シミュレーター", page_icon="🧠", layout="centered")
 
+# ==========================================
+# 🎨 劇的おしゃれCSS！タイトルを鮮やかなネオングリーンに大復活！
+# ==========================================
 st.markdown("""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- お散歩芋虫の設置 -->
+<div style="position: fixed; bottom: 10px; left: 0; width: 100%; overflow: hidden; pointer-events: none; z-index: 9999;">
+    <div style="display: inline-block; font-size: 30px; position: relative; animation: stroll 15s linear infinite;">🐛</div>
+</div>
+
 <style>
+    /* 👈 ホームに戻るボタン */
     .home-btn {
         display: inline-block;
         padding: 10px 22px;
@@ -25,22 +35,48 @@ st.markdown("""
         margin-bottom: 20px;
     }
     .home-btn:hover { background-color: #4CAF50; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); }
+    
     div.stButton > button { border-radius: 10px; font-weight: bold; width: 100%; transition: 0.2s; }
     div.stButton > button:hover { transform: scale(1.02); }
     .page-indicator { text-align: right; color: #888; font-weight: bold; }
     .result-mbti { font-size: 55px; font-weight: 900; color: #4CAF50; text-align: center; margin: 15px 0; }
+    
+    /* 🎨 一致度ランキング */
     .ranking-box { background-color: #1e1e1e; padding: 25px; border-radius: 15px; border: 2px solid #4CAF50; margin-top: 20px; }
     .ranking-item { font-size: 20px; margin: 12px 0; color: #ffffff !important; font-weight: bold; }
     .ranking-percent { color: #4CAF50 !important; font-weight: 900; }
-    .main-title-box { text-align: center; background: linear-gradient(135deg, #1b4d3e, #111111); padding: 30px; border-radius: 15px; border: 1px solid #4CAF50; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(76, 175, 80, 0.25); }
-    .main-title-text { font-size: 38px; font-weight: 900; color: #ffffff; text-shadow: 0 0 10px rgba(76, 175, 80, 0.8); margin: 0; }
-    .sub-title-text { font-size: 16px; font-weight: bold; color: #a1a1a1; margin-top: 10px; }
+    
+    /* ★ タイトルのおしゃれネオン装飾（みつきお気に入りの色に完全復活！） ★ */
+    .main-title-box {
+        text-align: center;
+        background-color: #1e1e1e !important;
+        padding: 30px;
+        border-radius: 15px;
+        border: 2px solid #4CAF50;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+    }
+    .main-title-text { 
+        font-size: 38px !important; 
+        font-weight: 900 !important; 
+        color: #4CAF50 !important; 
+        margin: 0 !important;
+        text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    }
+    .sub-title-text { 
+        font-size: 16px !important; 
+        font-weight: bold !important; 
+        color: #a1a1a1 !important; 
+        margin-top: 10px !important; 
+    }
 </style>
 """, unsafe_allow_html=True)
 
 gimmicks.init_session()
 
 st.markdown("<a href='https://mofu-mitsu.github.io/lab.html' class='home-btn'><i class='fa-solid fa-house'></i> ホームに戻る</a>", unsafe_allow_html=True)
+
+# ⚠️ ずっと表示されて邪魔だった大元のst.titleは完全に削除しました！
 
 page = st.session_state.page
 total_pages = 10 
@@ -51,15 +87,18 @@ if page > 0 and page <= total_pages:
     st.divider()
 
 if page == 0:
+    # ★ バグ修正：Markdownのインデントをなくし、一番上にドカンと配置！ ★
+    st.markdown("""
+<div class="main-title-box">
+    <h1 class="main-title-text"><i class="fa-solid fa-brain"></i> 認知機能ダイブ・シミュレーター</h1>
+    <div class="sub-title-text">〜 体感型MBTI / モデルG的 測定アプローチ 〜</div>
+</div>
+""", unsafe_allow_html=True)
+
     st.write("💡 まずは、あなたの自認タイプを教えてね！")
     st.session_state.zin_type = st.text_input("例：INTJ、LII、INTP 等", placeholder="入力したら下へ")
     st.divider()
-    st.markdown("""
-    <div class="main-title-box">
-        <h1 class="main-title-text"><i class="fa-solid fa-brain"></i> 認知機能ダイブ・シミュレーター</h1>
-        <div class="sub-title-text">〜 体感型MBTI / モデルG的 測定アプローチ 〜</div>
-    </div>
-    """, unsafe_allow_html=True)
+    
     gimmicks.run_te_ti_error()
 
 elif page == 1: gimmicks.run_p1_ni_flash()
@@ -74,10 +113,9 @@ elif page == 9: gimmicks.run_p9_emotion()
 elif page == 10: gimmicks.run_p10_ne()
 
 elif page == 11:
-    # ★ Neの計算バグ修正：1単語0.5点！20個書かないと満点にならない超厳格仕様！ ★
     if hasattr(st.session_state, "ne_final_ans") and st.session_state.ne_final_ans:
         words = [w.strip() for w in re.split(r'[、,]', st.session_state.ne_final_ans) if w.strip()]
-        st.session_state.scores["Ne"] += min(len(words) * 0.5, 10.0)
+        st.session_state.scores["Ne"] += min(len(words) * 0.7, 10.0)
         gimmicks.add_log(f"【Ne】連想単語を {len(words)}個 入力した")
         st.session_state.ne_final_ans = ""
 
@@ -85,6 +123,7 @@ elif page == 11:
     zin = st.session_state.get("zin_type", "未入力")
     st.write(f"👤 あなたの自認タイプ： **{zin}**")
     
+    # コサイン類似度
     stacks = {
         "INTJ": {"Ni": 4, "Te": 3, "Fi": 2, "Se": 1},
         "INFJ": {"Ni": 4, "Fe": 3, "Ti": 2, "Se": 1},
@@ -104,6 +143,7 @@ elif page == 11:
         "ESFP": {"Se": 4, "Fi": 3, "Te": 2, "Ni": 1},
     }
     
+    # 性格説明文
     mbti_desc = {
         "INTJ": "独創的な戦略家。知識の裏にある構造(Ni)を愛し、矛盾がないよう完璧な整合性(Ti/Te)が取れるまで底なしに掘り進める合理型。",
         "INFJ": "神秘的な理想主義者。人間の本質(Ni)を見抜き、温かい調和(Fe)をもたらす。内なる信念は極めて強固。",
@@ -119,7 +159,7 @@ elif page == 11:
         "ISFP": "感受性豊かな芸術家。自分の中の純粋な美学(Fi)を大切にし、目の前の現実(Se)をのびのびと楽しむ自由人。",
         "ESTJ": "厳格な実務家。実績あるマニュアルと秩序(Si)を守り、組織を最も効率的にマネジメント(Te)する実力派。",
         "ESFJ": "社交的なおもてなしのプロ。全員に配慮(Fe)を配り、確実な日常ルーティン(Si)をこなしてコミュニティを繋ぐ。",
-        "ESTP": "スリルを愛する冒険家。今この瞬間の刺激(Se)を全身で楽しみ、持ち前の冷静な論理(Ti)で難局を突破する俊敏な人。",
+        "ESTP": "スリルを愛する冒険家。今この瞬間の刺激(Se)を全身で楽しみ、持ち前の冷静な論理(Ti)で難局を突破する駿敏な人。",
         "ESFP": "お祭り騒ぎの主役。目の前の楽しさ(Se)を体現し、自分の『好き』(Fi)を全開にして周囲にポジティブなエネルギーを与える。"
     }
 
@@ -139,38 +179,25 @@ elif page == 11:
 
     st.markdown(f"<div class='result-mbti'>あなたの真のタイプ：{estimated_mbti}</div>", unsafe_allow_html=True)
     st.info(f"💡 **【{estimated_mbti}の概要】** \n{mbti_desc[estimated_mbti]}")
+    st.bar_chart(st.session_state.scores)
     
-    # ==========================================
-    # ★ スマホで絶対消えない！オリジナルCSSグラフの実装！ ★
-    # ==========================================
-    st.subheader("📊 心理機能スコア (Cognitive Functions)")
-    max_score = max(st.session_state.scores.values()) if max(st.session_state.scores.values()) > 0 else 1
-    
-    chart_html = "<div style='background-color:#1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #4CAF50; margin-bottom: 20px;'>"
-    for func, score in st.session_state.scores.items():
-        width_pct = (score / max_score) * 100
-        chart_html += f"""
-        <div style="margin-bottom: 12px; display: flex; align-items: center;">
-            <div style="width: 40px; color: #4CAF50; font-weight: bold; font-size: 18px;">{func}</div>
-            <div style="flex-grow: 1; background-color: #333; height: 22px; border-radius: 10px; margin: 0 15px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
-                <div style="width: {width_pct}%; background-color: #4CAF50; height: 100%; border-radius: 10px; transition: width 1s ease-in-out;"></div>
-            </div>
-            <div style="width: 45px; color: #fff; text-align: right; font-weight: bold; font-size: 16px;">{score:.1f}</div>
-        </div>
-        """
-    chart_html += "</div>"
-    st.markdown(chart_html, unsafe_allow_html=True)
-    
-    st.subheader("📊 16タイプ一致度ランキング (Top 5)")
     ranking_html = """
+    <style>
+        .ranking-box { background-color: #1e1e1e !important; padding: 25px; border-radius: 15px; border: 2px solid #4CAF50; margin-top: 20px; }
+        .ranking-item { font-size: 20px !important; margin: 12px 0 !important; color: #ffffff !important; font-weight: bold !important; }
+        .ranking-percent { color: #4CAF50 !important; font-weight: 900 !important; }
+    </style>
     <div class="ranking-box">
     """
     for rank, (mbti_type, score) in enumerate(sorted_ranks[:5]):
         percent = score * 100
         ranking_html += f"<div class='ranking-item'>👑 {rank+1}位: <span style='color: #4CAF50;'>{mbti_type}</span> (<span class='ranking-percent'>一致度 {percent:.1f}%</span>)</div>"
     ranking_html += '</div>'
+    
+    st.subheader("📊 16タイプ一致度ランキング (Top 5)")
     st.markdown(ranking_html, unsafe_allow_html=True)
     
+    # 行動ログの出力とワンクリックコピーボタン
     st.divider()
     st.subheader("📜 あなたの行動生ログ (Action Logs)")
     log_text = "\n".join(st.session_state.action_logs)
@@ -193,6 +220,7 @@ elif page == 11:
     """
     st.components.v1.html(copy_html, height=60)
 
+    # 診断カードの作成
     def make_card(mbti, ranks, zin, scores):
         img = Image.new("RGB", (700, 450), "#1E1E1E")
         draw = ImageDraw.Draw(img)
@@ -228,7 +256,10 @@ elif page == 11:
         mime="image/png"
     )
 
+    # ★★★ 自動メール送信（302リダイレクト維持仕様） ★★★
+    # ⚠️ 1つ目のgas_urlはみつきの実際のURLに書き換える！
     gas_url = "https://script.google.com/macros/s/AKfycby3mkiLQb-65eUQG0x_CuVO-amPwEbJypZK9-Ecp3zY-F5C-H7Qg2_2F1QCGEp_Lv5N_g/exec"
+    
     if gas_url != "https://script.google.com/macros/s/ここにGASのデプロイIDを入れる/exec":
         payload = {
             "mbti": estimated_mbti,
@@ -252,6 +283,7 @@ elif page == 11:
                 return super().redirect_request(req, fp, code, msg, headers, newurl)
 
         opener = urllib.request.build_opener(PostRedirectHandler)
+        
         req = urllib.request.Request(
             gas_url,
             data=json.dumps(payload).encode("utf-8"),
@@ -264,13 +296,17 @@ elif page == 11:
         except Exception as e:
             st.toast("⚠️ メール自動送信に失敗しました（URLの確認をしてください）")
 
+    # ★ 新・みつき特別仕様ダーリンセリフ判定！ ★
     zin_upper = zin.upper() if zin else ""
     is_special_target = ("INTJ" in zin_upper or "LII" in zin_upper or "ILI" in zin_upper)
     is_match = False
     
-    if estimated_mbti in zin_upper: is_match = True
-    elif estimated_mbti == "INTJ" and ("LII" in zin_upper or "ILI" in zin_upper): is_match = True
-    elif estimated_mbti == "INTP" and ("LII" in zin_upper or "ILE" in zin_upper): is_match = True
+    if estimated_mbti in zin_upper:
+        is_match = True
+    elif estimated_mbti == "INTJ" and ("LII" in zin_upper or "ILI" in zin_upper):
+        is_match = True
+    elif estimated_mbti == "INTP" and ("LII" in zin_upper or "ILE" in zin_upper):
+        is_match = True
 
     if is_special_target:
         if is_match:
@@ -285,6 +321,7 @@ elif page == 11:
     
     st.divider()
     
+    # シェアボタン
     share_html = f"""
     <div style="font-family: sans-serif;">
         <button onclick="shareApp()" style="background-color: #2b2b2b; color: white; border: 1px solid #ff4081; border-radius: 10px; font-weight: bold; width: 100%; padding: 12px; cursor: pointer; transition:0.3s;" onmouseover="this.style.backgroundColor='#ff4081'" onmouseout="this.style.backgroundColor='#2b2b2b'">
