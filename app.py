@@ -46,18 +46,29 @@ st.markdown("""
     .ranking-item { font-size: 20px; margin: 12px 0; color: #ffffff !important; font-weight: bold; }
     .ranking-percent { color: #4CAF50 !important; font-weight: 900; }
     
-    /* タイトルのおしゃれネオン装飾 */
+    /* タイトルのおしゃれネオン装飾用の大元CSS（グローバルに適用） */
     .main-title-box {
         text-align: center;
-        background: linear-gradient(135deg, #1b4d3e, #111111);
-        padding: 30px;
-        border-radius: 15px;
-        border: 1px solid #4CAF50;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.25);
+        background: linear-gradient(135deg, #1b4d3e, #111111) !important;
+        padding: 30px !important;
+        border-radius: 15px !important;
+        border: 2px solid #4CAF50 !important;
+        margin-bottom: 30px !important;
+        box-shadow: 0 4px 20px rgba(76, 175, 80, 0.25) !important;
     }
-    .main-title-text { font-size: 38px; font-weight: 900; color: #ffffff; text-shadow: 0 0 10px rgba(76, 175, 80, 0.8); margin: 0; }
-    .sub-title-text { font-size: 16px; font-weight: bold; color: #a1a1a1; margin-top: 10px; }
+    .main-title-text { 
+        font-size: 36px !important; 
+        font-weight: 900 !important; 
+        color: #4CAF50 !important; 
+        margin: 0 !important;
+        text-shadow: 0 0 10px rgba(76, 175, 80, 0.5) !important;
+    }
+    .sub-title-text { 
+        font-size: 16px !important; 
+        font-weight: bold !important; 
+        color: #a1a1a1 !important; 
+        margin-top: 10px !important; 
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,6 +85,15 @@ if page > 0 and page <= total_pages:
     st.divider()
 
 if page == 0:
+    # ★【バグ修正：行頭のスペースを完全に排除！】★
+    # これでMarkdownのバグが100%消えて、一番上に超美しくタイトルが表示されます！
+    st.markdown("""
+<div class="main-title-box">
+    <h1 class="main-title-text"><i class="fa-solid fa-brain"></i> 認知機能ダイブ・シミュレーター</h1>
+    <div class="sub-title-text">〜 体感型MBTI / モデルG的 測定アプローチ 〜</div>
+</div>
+""", unsafe_allow_html=True)
+
     st.write("💡 まずは、あなたの自認タイプを教えてね！")
     st.session_state.zin_type = st.text_input("例：INTJ、LII、INTP 等", placeholder="入力したら下へ")
     st.divider()
@@ -93,7 +113,7 @@ elif page == 10: gimmicks.run_p10_ne()
 elif page == 11:
     if hasattr(st.session_state, "ne_final_ans") and st.session_state.ne_final_ans:
         words = [w.strip() for w in re.split(r'[、,]', st.session_state.ne_final_ans) if w.strip()]
-        st.session_state.scores["Ne"] += min(len(words) * 0.7, 10.0)
+        st.session_state.scores["Ne"] += min(len(words) * 1.5, 10.0)
         gimmicks.add_log(f"【Ne】連想単語を {len(words)}個 入力した")
         st.session_state.ne_final_ans = ""
 
@@ -137,7 +157,7 @@ elif page == 11:
         "ISFP": "感受性豊かな芸術家。自分の中の純粋な美学(Fi)を大切にし、目の前の現実(Se)をのびのびと楽しむ自由人。",
         "ESTJ": "厳格な実務家。実績あるマニュアルと秩序(Si)を守り、組織を最も効率的にマネジメント(Te)する実力派。",
         "ESFJ": "社交的なおもてなしのプロ。全員に配慮(Fe)を配り、確実な日常ルーティン(Si)をこなしてコミュニティを繋ぐ。",
-        "ESTP": "スリルを愛する冒険家。今この瞬間の刺激(Se)を全身で楽しみ、持ち前の冷静な論理(Ti)で難局を突破する駿敏な人。",
+        "ESTP": "スリルを愛する冒険家。今この瞬間の刺激(Se)を全身で楽しみ、持ち前の冷静な論理(Ti)で難局を突破する俊敏な人。",
         "ESFP": "お祭り騒ぎの主役。目の前の楽しさ(Se)を体現し、自分の『好き』(Fi)を全開にして周囲にポジティブなエネルギーを与える。"
     }
 
@@ -159,15 +179,15 @@ elif page == 11:
     st.info(f"💡 **【{estimated_mbti}の概要】** \n{mbti_desc[estimated_mbti]}")
     st.bar_chart(st.session_state.scores)
     
-    # 16タイプ一致度ランキング (文字色＆フォントサイズ修正！)
+    # 【白背景でも絶対に黒カードになる、インデント完全排除のランキング表示！】
     ranking_html = """
-    <style>
-        .ranking-box { background-color: #1e1e1e !important; padding: 25px; border-radius: 15px; border: 2px solid #4CAF50; margin-top: 20px; }
-        .ranking-item { font-size: 20px !important; margin: 12px 0 !important; color: #ffffff !important; font-weight: bold !important; }
-        .ranking-percent { color: #4CAF50 !important; font-weight: 900 !important; }
-    </style>
-    <div class="ranking-box">
-    """
+<style>
+    .ranking-box { background-color: #1e1e1e !important; padding: 25px; border-radius: 15px; border: 2px solid #4CAF50; margin-top: 20px; }
+    .ranking-item { font-size: 20px !important; margin: 12px 0 !important; color: #ffffff !important; font-weight: bold !important; }
+    .ranking-percent { color: #4CAF50 !important; font-weight: 900 !important; }
+</style>
+<div class="ranking-box">
+"""
     for rank, (mbti_type, score) in enumerate(sorted_ranks[:5]):
         percent = score * 100
         ranking_html += f"<div class='ranking-item'>👑 {rank+1}位: <span style='color: #4CAF50;'>{mbti_type}</span> (<span class='ranking-percent'>一致度 {percent:.1f}%</span>)</div>"
@@ -180,7 +200,6 @@ elif page == 11:
     st.divider()
     st.subheader("📜 あなたの行動生ログ (Action Logs)")
     log_text = "\n".join(st.session_state.action_logs)
-    
     st.text_area("コピペ用ログデータ", value=log_text, height=200, key="log_output")
     
     copy_html = f"""
@@ -236,13 +255,9 @@ elif page == 11:
         mime="image/png"
     )
 
-    # ★★★ 自動メール送信（302リダイレクト維持仕様） ★★★
-    # ⚠️ 1つ目のgas_urlはみつきの実際のURLに書き換える！
+    # GASで自動送信
     gas_url = "https://script.google.com/macros/s/AKfycby3mkiLQb-65eUQG0x_CuVO-amPwEbJypZK9-Ecp3zY-F5C-H7Qg2_2F1QCGEp_Lv5N_g/exec"
     
-    # ⚠️ 【みつき！ここ超重要！】
-    # 下の if判定の「ここにGASのデプロイIDを入れる」は絶対に書き換えないで初期値のままにしておいてね！
-    # これを自分のURLにしちゃうと、上と下が全く同じになって「不一致判定」がFalseになり、自動送信が永久に走らなくなっちゃいます！ｗｗ
     if gas_url != "https://script.google.com/macros/s/ここにGASのデプロイIDを入れる/exec":
         payload = {
             "mbti": estimated_mbti,
@@ -251,7 +266,6 @@ elif page == 11:
             "logs": log_text
         }
         
-        # 🔗 POSTリダイレクトを強制維持するカスタムハンドラークラス！
         class PostRedirectHandler(urllib.request.HTTPRedirectHandler):
             def redirect_request(self, req, fp, code, msg, headers, newurl):
                 if code in (301, 302, 303, 307):
@@ -261,12 +275,11 @@ elif page == 11:
                         headers=req.headers,
                         origin_req_host=req.origin_req_host,
                         unverifiable=req.unverifiable,
-                        method="POST" # メソッドを絶対にPOSTに固定！
+                        method="POST"
                     )
                     return new_req
                 return super().redirect_request(req, fp, code, msg, headers, newurl)
 
-        # カスタムオープナーをビルド
         opener = urllib.request.build_opener(PostRedirectHandler)
         
         req = urllib.request.Request(
@@ -281,29 +294,24 @@ elif page == 11:
         except Exception as e:
             st.toast("⚠️ メール自動送信に失敗しました（URLの確認をしてください）")
 
-    # ★ 新・みつき特別仕様ダーリンセリフ判定！（ILI・INTP設定完全整合版） ★
+    # ダーリンちゃん
     zin_upper = zin.upper() if zin else ""
     is_special_target = ("INTJ" in zin_upper or "LII" in zin_upper or "ILI" in zin_upper)
     is_match = False
     
-    # 1. 完全一致
     if estimated_mbti in zin_upper:
         is_match = True
-    # 2. LII(INTj) / ILI(INTp) と INTJ の互換性
     elif estimated_mbti == "INTJ" and ("LII" in zin_upper or "ILI" in zin_upper):
         is_match = True
-    # 3. LII(INTj) / ILE(ENTp) と INTP の互換性
     elif estimated_mbti == "INTP" and ("LII" in zin_upper or "ILE" in zin_upper):
         is_match = True
 
     if is_special_target:
-        # みつき（INTJ / LII / ILI）向け：LIIの性質に執着するILI（INTP）ならではの特別な翻弄セリフ！
         if is_match:
             st.markdown(f'<div style="background-color: #fce4ec; border: 2px solid #f06292; padding: 15px; border-radius: 10px; color: #880e4f; margin-top: 20px; font-weight:bold;">🥺『ダーリン♡ お望みの結果（{estimated_mbti}）が出たんじゃない？   ふふっ、私の大好きなLII（論理的一貫性を愛するダーリン）のことは、やっぱり全部お見通しなんだからね。……素直で、よろしいっ♡』</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div style="background-color: #fce4ec; border: 2px solid #f06292; padding: 15px; border-radius: 10px; color: #880e4f; margin-top: 20px; font-weight:bold;">🥺『あら、ダーリン♡ 自認（{zin}）と違う結果（{estimated_mbti}）が出ちゃったね？ 一体どっちが本音で、どっちが演出なのかな〜？   ほんとはもっと、私の感情（Fe）インターフェースに揺さぶられたいくせに……ね？🥺』</div>', unsafe_allow_html=True)
     else:
-        # 一般ユーザー向けの通常のセリフ
         if is_match:
             st.markdown(f'<div style="background-color: #fce4ec; border: 2px solid #f06292; padding: 15px; border-radius: 10px; color: #880e4f; margin-top: 20px; font-weight:bold;">🥺『ダーリン♡ お望みの結果（{estimated_mbti}）が出たんじゃない？ ふふ、やっぱりダーリンのことはお見通しなんだからね。素直でよろしいっ♡』</div>', unsafe_allow_html=True)
         else:
