@@ -107,9 +107,10 @@ def run_p1_ni_flash():
             if st.button("決定！"):
                 if "言葉" in ans or "ことば" in ans or "コトバ" in ans:
                     time_taken = time.time() - st.session_state.ni_start
-                    if st.session_state.ni_hints == 0 and time_taken < 10.0: st.session_state.scores["Ni"] += 6
-                    elif st.session_state.ni_hints == 0: st.session_state.scores["Ni"] += 3
-                    else: st.session_state.scores["Ni"] += 1
+                    # ★ タイム緩和：20秒以内なら神速ボーナス！
+                    if st.session_state.ni_hints == 0 and time_taken < 20.0: st.session_state.scores["Ni"] += 6
+                    elif st.session_state.ni_hints == 0: st.session_state.scores["Ni"] += 4
+                    else: st.session_state.scores["Ni"] += 2
                     add_log(f"【Ni】閃きテスト正解！ ({time_taken:.1f}秒 / ヒント{st.session_state.ni_hints}回)")
                     st.success("大正解！")
                 else:
@@ -134,17 +135,17 @@ def run_p2_ni_pattern():
         if any(k in ans for k in deep_ni_keywords):
             st.session_state.scores["Ni"] += 7
             add_log(f"【Ni】高度な抽象化テストに大正解！(回答: {ans} / {time_taken:.1f}秒)")
-            st.success("素晴らしい！現象の裏に潜む「本質的な物理法則・哲学」を完璧に捉えました！(Ni+7)")
+            st.success("素晴らしい！現象の裏に潜む本質的な法則を完璧に捉えました！")
         elif any(k in ans for k in common_ni_keywords):
-            # ★ みつき仕様：一般ワードでも5秒以内なら直感(Ni)として高評価！
-            if time_taken < 7.0:
+            # ★ タイム緩和：12秒以内なら直感としてボーナス！
+            if time_taken < 12.0:
                 st.session_state.scores["Ni"] += 6
                 add_log(f"【Ni】神速の直感で抽象化テストに正解！(回答: {ans} / {time_taken:.1f}秒)")
-                st.success("神速の直感！一瞬で本質を見抜きましたね！(Ni+6)")
+                st.success("神速の直感！一瞬で本質を見抜きましたね！")
             else:
                 st.session_state.scores["Ni"] += 3
                 add_log(f"【Ni】抽象化テストに正解。(回答: {ans} / {time_taken:.1f}秒)")
-                st.success("正解です！(時間や寿命など)。(Ni+3)")
+                st.success("正解です！")
         else:
             add_log(f"【Ni】抽象概念テスト不正解 (回答: {ans})")
             st.error("ちょっと違うかも…？正解は「時間」や「無常」などでした！")
@@ -168,7 +169,7 @@ def run_p3_ti_blackbox():
             out_val = digits_sum * mult
             st.session_state.ti_history.append((test_val, out_val))
             if st.session_state.ti_exp_count < 5:
-                st.session_state.scores["Ti"] += 1.0 
+                st.session_state.scores["Ti"] += 1.5 
             st.session_state.ti_exp_count += 1
             add_log(f"【Ti】ブラックボックスに『{test_val}』を入力して検証した")
             st.rerun()
@@ -230,13 +231,12 @@ def run_p4_te_sort():
             elapsed = time.time() - st.session_state.te_start_time
             corrects = st.session_state.te_correct
             
-            te_score = corrects * 0.4 # 最大3.2点
+            te_score = corrects * 0.4
             time_bonus = 0
-            # ★ タイムボーナスの調整 ★
             if corrects >= 6:
-                if elapsed < 8.0: time_bonus = 5.0      # ESTJ/ENTJレベル
-                elif elapsed < 13.0: time_bonus = 3.0   # INTJレベル
-                elif elapsed < 20.0: time_bonus = 1.0   
+                if elapsed < 15.0: time_bonus = 6.0      
+                elif elapsed < 22.0: time_bonus = 4.0    
+                elif elapsed < 30.0: time_bonus = 2.0    
             
             st.session_state.scores["Te"] += te_score + time_bonus
             add_log(f"【Te】仕分け業務完了 (正解: {corrects}/8名, タイム: {elapsed:.2f}秒)")
@@ -294,7 +294,6 @@ def run_p6_se_color():
     colors[ans_key] = st.session_state.se_color_diff
     
     col1, col2, col3, col4 = st.columns(4)
-    # ★ バグ修正： ABCD の文字をブロックの中に太字でハッキリ表示させました！ ★
     with col1: st.markdown(f'<div style="background-color:{colors["A"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">A</div>', unsafe_allow_html=True)
     with col2: st.markdown(f'<div style="background-color:{colors["B"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">B</div>', unsafe_allow_html=True)
     with col3: st.markdown(f'<div style="background-color:{colors["C"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">C</div>', unsafe_allow_html=True)
@@ -324,6 +323,7 @@ def run_p6_se_color():
 
 def run_p7_se_games():
     st.header("🥁 Part 7: 感覚とスリル")
+    
     st.subheader("🪘 陽キャバス")
     st.write("目の前に自由に叩ける楽器があります。直感のままに叩いてみて！")
     if st.button("楽器をドコドコ叩く！！（連打OK）"):
@@ -343,7 +343,6 @@ def run_p7_se_games():
         if st.button("ストップ！"):
             diff = time.time() - st.session_state.thrill_start
             error = abs(10.0 - diff)
-            # ★ Seチキンレースの徹底ナーフ！ 0.15秒以内の神業じゃないと点数出ない！
             if error <= 0.15: st.session_state.scores["Se"] += 6.0
             elif error <= 0.5: st.session_state.scores["Se"] += 3.0
             st.session_state.thrill_result = f"記録: {diff:.2f}秒 (誤差 {error:.2f}秒)"
@@ -354,12 +353,12 @@ def run_p7_se_games():
         st.success(st.session_state.thrill_result)
         if st.button("次へ進む"):
             add_log(f"【Se】陽キャバスを {st.session_state.drum_count}回 叩いた")
-            # ★ ドラムの加点も徹底ナーフ！ 1タップ0.1点！
-            st.session_state.scores["Se"] += min(st.session_state.drum_count * 0.1, 5.0)
+            # ★ 陽キャバス上限大解放！ 1回0.2点、最大10点（50回叩きでMAX）
+            st.session_state.scores["Se"] += min(st.session_state.drum_count * 0.2, 10.0)
             next_page()
 
 def run_p8_imomushi():
-    st.header("🐛 Part 8: LSI-Ni 芋虫襲来")
+    st.header("🐛 Part 8: 芋虫襲来")
     st.write("画面を芋虫が横切っています……")
     clicks = st.session_state.imomushi_clicks
     if clicks < 30:
@@ -394,6 +393,7 @@ def run_p8_imomushi():
 
 def run_p9_emotion():
     st.header("💖 Part 9: 感情の防衛と共感")
+    
     st.subheader("📺 共感テスト")
     st.write("【状況】テレビで、雨に濡れて震える可哀想な子犬の映像が流れています……")
     st.write("この子犬に対して、何かしてあげたい・感情が動かされたならボタンを押してください。")
@@ -405,8 +405,9 @@ def run_p9_emotion():
         st.markdown(f"<h3 style='color:#ff4b4b; line-height:1.2;'>{'🥺可哀想… ' * st.session_state.fe_empathy}</h3>", unsafe_allow_html=True)
         
     st.divider()
+    
     st.subheader("🛡️ 自己防衛シューティング")
-    st.write("画面にあなたに向かってくる『悪意のクソ文句（悪口そのもの）』があります。クリックして撃ち落としてください！")
+    st.write("画面にあなたに向かってくる『悪意のクソ文句』があります。クリックして撃ち落としてください！")
     
     cols = st.columns(5)
     for i, word in enumerate(st.session_state.fi_active_words):
@@ -423,8 +424,9 @@ def run_p9_emotion():
 
     st.divider()
     if st.button("満足したので次へ進む"):
-        st.session_state.scores["Fe"] += min(st.session_state.fe_empathy * 0.5, 4.0)
-        st.session_state.scores["Fi"] += min(st.session_state.fi_destroyed_count * 0.5, 6.0)
+        # ★ FeとFiの上限大解放！10点（MAX）まで伸びるように！
+        st.session_state.scores["Fe"] += min(st.session_state.fe_empathy * 0.2, 10.0)
+        st.session_state.scores["Fi"] += min(st.session_state.fi_destroyed_count * 1.0, 10.0)
         add_log(f"【Fe】子犬に {st.session_state.fe_empathy}回 心を寄せた")
         add_log(f"【Fi】悪口を {st.session_state.fi_destroyed_count}個 撃ち落とした")
         next_page()
