@@ -294,10 +294,11 @@ def run_p6_se_color():
     colors[ans_key] = st.session_state.se_color_diff
     
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.markdown(f'<div style="background-color:{colors["A"]}; height:80px; border-radius:5px;"></div>', unsafe_allow_html=True)
-    with col2: st.markdown(f'<div style="background-color:{colors["B"]}; height:80px; border-radius:5px;"></div>', unsafe_allow_html=True)
-    with col3: st.markdown(f'<div style="background-color:{colors["C"]}; height:80px; border-radius:5px;"></div>', unsafe_allow_html=True)
-    with col4: st.markdown(f'<div style="background-color:{colors["D"]}; height:80px; border-radius:5px;"></div>', unsafe_allow_html=True)
+    # ★ バグ修正： ABCD の文字をブロックの中に太字でハッキリ表示させました！ ★
+    with col1: st.markdown(f'<div style="background-color:{colors["A"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">A</div>', unsafe_allow_html=True)
+    with col2: st.markdown(f'<div style="background-color:{colors["B"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">B</div>', unsafe_allow_html=True)
+    with col3: st.markdown(f'<div style="background-color:{colors["C"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">C</div>', unsafe_allow_html=True)
+    with col4: st.markdown(f'<div style="background-color:{colors["D"]}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">D</div>', unsafe_allow_html=True)
         
     b1, b2, b3, b4 = st.columns(4)
     choice = None
@@ -312,7 +313,7 @@ def run_p6_se_color():
         
     if choice:
         if choice == ans_key:
-            st.session_state.scores["Se"] += 0.5  # ★ Seを徹底ナーフ！正解しても+0.5点！
+            st.session_state.scores["Se"] += 0.5
             add_log("【Se】色彩感覚テスト: 正解")
             st.success("大正解！")
         else:
