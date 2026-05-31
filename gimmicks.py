@@ -366,7 +366,7 @@ def run_p8_imomushi():
             st.session_state.imomushi_clicks += 1
             st.rerun()
         if clicks == 0: st.caption("「……（お散歩中）」")
-        elif clicks < 5: st.caption("「何だね？私は考え事に耽りながら散歩中だ。」")
+        elif clicks < 5: st.caption("「何だね？僕は考え事に耽りながら散歩中だ。」")
         elif clicks < 10: st.caption("「おいおい、むやみに触らないでくれたまえ。」")
         elif clicks < 15: st.caption("「……お前僕を怒らせたいのか？」")
         elif clicks < 25: st.caption("「しつこいな！お前、SLEか！？やめろ！」")
