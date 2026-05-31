@@ -422,12 +422,32 @@ def run_p9_emotion():
 
     st.divider()
     if st.button("満足したので次へ進む"):
-        # ★ FeもFiも完全に青天井！ 1回につき0.5点！ ストッパー(min)完全削除！ ★
-        st.session_state.scores["Fe"] += st.session_state.fe_empathy * 0.5
-        st.session_state.scores["Fi"] += st.session_state.fi_destroyed_count * 0.5
+        # ★ みつきの神考察：「やりすぎた連打は感情ではなくSe（ストレス発散）である」を実装！
         
-        add_log(f"【Fe】子犬に {st.session_state.fe_empathy}回 心を寄せた")
-        add_log(f"【Fi】悪口を {st.session_state.fi_destroyed_count}個 撃ち落とした")
+        # --- Feの計算 ---
+        fe_taps = st.session_state.fe_empathy
+        if fe_taps <= 30:
+            fe_score = fe_taps * 0.5
+            se_bonus_fe = 0.0
+        else:
+            fe_score = 15.0  # 20回でFeは飽和
+            se_bonus_fe = (fe_taps - 20) * 0.2  # 21回目以降はただのSe（物理的連打）に変換！
+
+        # --- Fiの計算 ---
+        fi_taps = st.session_state.fi_destroyed_count
+        if fi_taps <= 30:
+            fi_score = fi_taps * 0.5
+            se_bonus_fi = 0.0
+        else:
+            fi_score = 15.0  # 20回でFiは飽和
+            se_bonus_fi = (fi_taps - 20) * 0.2  # 21個目以降はただのシューティング(Se)に変換！
+
+        st.session_state.scores["Fe"] += fe_score
+        st.session_state.scores["Fi"] += fi_score
+        st.session_state.scores["Se"] += (se_bonus_fe + se_bonus_fi)
+        
+        add_log(f"【Fe/Se】子犬に {fe_taps}回 心を寄せた (Fe:+{fe_score}, 暴走Se:+{se_bonus_fe:.1f})")
+        add_log(f"【Fi/Se】悪口を {fi_taps}個 撃ち落とした (Fi:+{fi_score}, 暴走Se:+{se_bonus_fi:.1f})")
         next_page()
 
 def run_p10_ne():
