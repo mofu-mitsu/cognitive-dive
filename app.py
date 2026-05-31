@@ -116,22 +116,22 @@ elif page == 11:
     st.write(f"👤 あなたの自認タイプ： **{zin}**")
     
     stacks = {
-        "INTJ": {"Ni": 4, "Te": 3, "Fi": 2, "Se": 1},
-        "INFJ": {"Ni": 4, "Fe": 3, "Ti": 2, "Se": 1},
-        "INTP": {"Ti": 4, "Ne": 3, "Si": 2, "Fe": 1},
-        "INFP": {"Fi": 4, "Ne": 3, "Si": 2, "Te": 1},
-        "ENTJ": {"Te": 4, "Ni": 3, "Se": 2, "Fi": 1},
-        "ENFJ": {"Fe": 4, "Ni": 3, "Se": 2, "Ti": 1},
-        "ENTP": {"Ne": 4, "Ti": 3, "Fe": 2, "Si": 1},
-        "ENFP": {"Ne": 4, "Fi": 3, "Te": 2, "Si": 1},
-        "ISTJ": {"Si": 4, "Te": 3, "Fi": 2, "Ne": 1},
-        "ISFJ": {"Si": 4, "Fe": 3, "Ti": 2, "Ne": 1},
-        "ISTP": {"Ti": 4, "Se": 3, "Ni": 2, "Fe": 1},
-        "ISFP": {"Fi": 4, "Se": 3, "Ni": 2, "Te": 1},
-        "ESTJ": {"Te": 4, "Si": 3, "Ne": 2, "Fi": 1},
-        "ESFJ": {"Fe": 4, "Si": 3, "Ne": 2, "Ti": 1},
-        "ESTP": {"Se": 4, "Ti": 3, "Fe": 2, "Ni": 1},
-        "ESFP": {"Se": 4, "Fi": 3, "Te": 2, "Ni": 1},
+        "INTJ": {"Ni": 10, "Te": 7, "Fi": 3, "Se": 1},
+        "INFJ": {"Ni": 10, "Fe": 7, "Ti": 3, "Se": 1},
+        "INTP": {"Ti": 10, "Ne": 7, "Si": 3, "Fe": 1},
+        "INFP": {"Fi": 10, "Ne": 7, "Si": 3, "Te": 1},
+        "ENTJ": {"Te": 10, "Ni": 7, "Se": 3, "Fi": 1},
+        "ENFJ": {"Fe": 10, "Ni": 7, "Se": 3, "Ti": 1},
+        "ENTP": {"Ne": 10, "Ti": 7, "Fe": 3, "Si": 1},
+        "ENFP": {"Ne": 10, "Fi": 7, "Te": 3, "Si": 1},
+        "ISTJ": {"Si": 10, "Te": 7, "Fi": 3, "Ne": 1},
+        "ISFJ": {"Si": 10, "Fe": 7, "Ti": 3, "Ne": 1},
+        "ISTP": {"Ti": 10, "Se": 7, "Ni": 3, "Fe": 1},
+        "ISFP": {"Fi": 10, "Se": 7, "Ni": 3, "Te": 1},
+        "ESTJ": {"Te": 10, "Si": 7, "Ne": 3, "Fi": 1},
+        "ESFJ": {"Fe": 10, "Si": 7, "Ne": 3, "Ti": 1},
+        "ESTP": {"Se": 10, "Ti": 7, "Fe": 3, "Ni": 1},
+        "ESFP": {"Se": 10, "Fi": 7, "Te": 3, "Ni": 1},
     }
     
     mbti_desc = {
@@ -154,18 +154,20 @@ elif page == 11:
     }
 
     def calc_similarity(user, ideal):
-        dot_product = sum(user.get(k, 0) * ideal.get(k, 0) for k in user)
+        dot_product = sum(user.get(k, 0) * ideal.get(k, 0) for k in ideal)
         mag_user = math.sqrt(sum(val**2 for val in user.values()))
         mag_ideal = math.sqrt(sum(val**2 for val in ideal.values()))
         if mag_user == 0 or mag_ideal == 0: return 0
-        return dot_product / (mag_user * mag_ideal)
+        
+        sim = dot_product / (mag_user * mag_ideal)
+        return max(0, sim)
 
     results = {}
     for mbti, stack in stacks.items():
         results[mbti] = calc_similarity(st.session_state.scores, stack)
     
     sorted_ranks = sorted(results.items(), key=lambda x: x[1], reverse=True)
-    estimated_mbti = sorted_ranks[0][0]
+    estimated_mbti = sorted_ranks[0][0]  # ランキング1位を結果にする
 
     st.markdown(f"<div class='result-mbti'>あなたの真のタイプ：{estimated_mbti}</div>", unsafe_allow_html=True)
     st.info(f"💡 **【{estimated_mbti}の概要】** \n{mbti_desc[estimated_mbti]}")
