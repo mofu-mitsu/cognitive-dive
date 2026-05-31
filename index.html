@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <!-- Google Analytics ※みつきが全ページに貼った魂のタグ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNTX973GET"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-GNTX973GET');
+    </script>
     <!-- 🔍 Google等の検索エンジン用SEOメタタグ -->
     <title>認知機能ダイブ・シミュレーター 〜体感型MBTI / モデルG的測定〜</title>
     <meta name="description" content="思い込み（自認）を徹底的に排除し、リアルな行動やブラックボックスの検証プロセスからあなたの『真の認知機能（8つの心理機能）』を精密にデコードする体感型シミュレーター。16タイプ一致度ランキングや詳細な行動ログを出力！">
@@ -41,6 +48,6 @@
 <body>
     <!-- ⚠️ ここに、みつきがStreamlit Cloudでデプロイした本番URLの末尾に「?embed=true」を付けて貼り付ける！ -->
     <!-- これを付けることで、Streamlit標準の余計なヘッダーやフッターを非表示にして一体化できるよ！ -->
-    <iframe src="https://ここにデプロイしたStreamlitの本番URLを貼り付ける?embed=true"></iframe>
+    <iframe src="https://cognitive-dive.streamlit.app/?embed=true"></iframe>
 </body>
 </html>
