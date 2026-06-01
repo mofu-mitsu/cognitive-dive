@@ -129,8 +129,8 @@ def run_p2_ni_pattern():
     ans = st.text_input("本質を見抜いて入力！", key="ni2_ans")
     if st.button("決定！"):
         time_taken = time.time() - st.session_state.ni2_start
-        deep_ni_keywords = ["不可逆", "無常", "エントロピー", "有限", "終焉", "退廃", "サイクル", "死", "衰退", "栄枯盛衰", "輪廻", "滅び"]
-        common_ni_keywords = ["時間", "命", "寿命", "桜", "時計", "時の流れ", "時間経過", "変化"]
+        deep_ni_keywords = ["不可逆", "無常", "エントロピー", "有限", "終焉","退廃","サイクル", "死", "衰退", "栄枯盛衰", "輪廻", "滅び","運命"]
+        common_ni_keywords = ["時間", "命", "寿命", "桜", "時計", "時の流れ", "終" ,"時間経過", "変化"]
         
         if any(k in ans for k in deep_ni_keywords):
             st.session_state.scores["Ni"] += 7
