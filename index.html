@@ -44,7 +44,10 @@
             --text: #ffffff;
             --error: #ff4b4b;
         }
-        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
+        /* ★ CSSでもダブルタップ拡大を徹底的に封じる！ ★ */
+        * { touch-action: manipulation; box-sizing: border-box; }
+        
+        body, html { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
         .container { max-width: 700px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
         
         .main-title-box {
@@ -58,7 +61,7 @@
         .btn {
             background-color: #2b2b2b; color: white; border: 2px solid #444; border-radius: 10px;
             padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
-            width: 100%; box-sizing: border-box; margin: 5px 0; text-align: center;
+            width: 100%; margin: 5px 0; text-align: center;
         }
         .btn:hover { background-color: #444; border-color: var(--neon); transform: scale(1.02); }
         .btn-neon { border-color: var(--neon); background-color: rgba(76,175,80,0.1); color: var(--neon); }
@@ -68,7 +71,7 @@
         
         input[type="text"], input[type="number"], textarea {
             width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222;
-            color: white; font-size: 16px; box-sizing: border-box; margin-bottom: 15px;
+            color: white; font-size: 16px; margin-bottom: 15px;
         }
         .card { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .toast { position: fixed; top: 20px; right: 20px; background: var(--neon); color: #000; padding: 15px 25px; border-radius: 8px; font-weight: bold; z-index: 10000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -83,7 +86,20 @@
         #imomushi { position: fixed; bottom: 10px; left: 0; font-size: 40px; cursor: pointer; user-select: none; z-index: 9999; display: none; }
         .grid-cols { display: flex; gap: 10px; }
         .grid-cols > div { flex: 1; }
-        .flex-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        /* ★ Fi本格シューティング用CSS ★ */
+        .fi-target {
+            position: absolute; width: auto !important; padding: 5px 15px !important;
+            animation: jitter 2.5s infinite alternate ease-in-out;
+        }
+        @keyframes jitter { 0% { transform: translate(0px,0px) scale(1); } 100% { transform: translate(15px, -15px) scale(1.05); } }
+        
+        /* ★ Fe犬パーティクル用CSS ★ */
+        .particle { position: absolute; pointer-events: none; font-size: 24px; animation: floatUp 1s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-80px) scale(1.5); opacity: 0; } }
+
+        /* 結果メッセージ用 */
+        .res-msg { margin-top: 10px; font-weight: bold; font-size: 18px; text-align: center; }
     </style>
 </head>
 <body>
@@ -135,6 +151,7 @@
                         <div><button class="btn" onclick="p1_hint()">ヒントを見る👀</button></div>
                         <div><button class="btn btn-neon" onclick="p1_submit()">決定！</button></div>
                     </div>
+                    <div id="p1-res-msg" class="res-msg"></div>
                 </div>
             </div>
         </div>
@@ -149,6 +166,7 @@
                 </div>
                 <input type="text" id="p2-ans" placeholder="本質を見抜いて入力！">
                 <button class="btn btn-neon" onclick="p2_submit()">決定！</button>
+                <div id="p2-res-msg" class="res-msg"></div>
             </div>
         </div>
 
@@ -164,8 +182,11 @@
                 
                 <hr style="border-color:#333;">
                 <p>❓ 法則が見えてきましたか？ 本番クイズです。</p>
-                <input type="text" id="p3-ans" placeholder="入力が『 <span id='p3-target-disp'></span> 』の場合、出力は何になる？">
+                <!-- ★ バグ修正！プレースホルダーではなく、上部にハッキリ表示！ ★ -->
+                <p style="font-size:18px; font-weight:bold;">入力が『 <strong id="p3-target-disp" style="color:var(--neon); font-size:24px;"></strong> 』の場合、出力は何になる？</p>
+                <input type="number" id="p3-ans" placeholder="答えを数字で入力">
                 <button class="btn btn-neon" onclick="p3_submit()">法則を解明したので決定！</button>
+                <div id="p3-res-msg" class="res-msg"></div>
             </div>
         </div>
 
@@ -207,6 +228,7 @@
                 <div id="p5-step-ans" style="display:none;">
                     <input type="text" id="p5-ans" placeholder="数字を入力！">
                     <button class="btn btn-neon" onclick="p5_submit()">決定！</button>
+                    <div id="p5-res-msg" class="res-msg"></div>
                 </div>
             </div>
         </div>
@@ -217,6 +239,7 @@
                 <h2>🎨 Part 6: 微細な差異の感知</h2>
                 <p>Q. 1つだけ微妙に違う色のタイルをクリックして見抜いてください！</p>
                 <div class="grid-cols" id="p6-tiles" style="margin-bottom:15px;"></div>
+                <div id="p6-res-msg" class="res-msg"></div>
             </div>
         </div>
 
@@ -226,9 +249,9 @@
                 <h2>🥁 Part 7: 感覚とスリル</h2>
                 
                 <h3>🪘 陽キャバス</h3>
-                <p>自由に叩ける楽器があります！</p>
+                <p>自由に叩ける楽器があります！<br><span style="font-size:12px; color:#aaa;">※マナーモードを解除すると音が鳴ります！</span></p>
                 <div class="grid-cols">
-                    <div><button class="btn btn-neon" onclick="playDrum('kick')">🥁 キック</button></div>
+                    <div><button class="btn btn-neon" onclick="playDrum('kick')">🥁 バスドラ</button></div>
                     <div><button class="btn btn-neon" onclick="playDrum('snare')">🥁 スネア</button></div>
                     <div><button class="btn btn-neon" style="color:#ffdd57; border-color:#ffdd57;" onclick="playDrum('hihat')">🎷 シンバル</button></div>
                 </div>
@@ -239,7 +262,7 @@
                 <h3>⏱️ 10秒チキンレース</h3>
                 <p>タイマーは見えません。感覚だけで『ピッタリ10.00秒』でストップを押して！</p>
                 <button class="btn" id="p7-timer-btn" onclick="p7_timerToggle()">スタート！</button>
-                <p id="p7-timer-res" style="color:var(--neon); font-weight:bold;"></p>
+                <p id="p7-timer-res" style="color:var(--neon); font-weight:bold; font-size:18px; text-align:center;"></p>
                 <button class="btn btn-neon" id="p7-next-btn" style="display:none;" onclick="p7_next()">次へ進む</button>
             </div>
         </div>
@@ -248,9 +271,9 @@
         <div id="page-8" class="page">
             <div class="card">
                 <h2>🐛 Part 8: LSI-Ni 芋虫襲来</h2>
-                <p>画面を芋虫が横切っています……（画面下を歩いている絵文字をタップ！）</p>
-                <p id="p8-msg" style="color:#aaa; font-style:italic;">「……（お散歩中）」</p>
-                <button class="btn" onclick="p8_next()">無視して次へ進む</button>
+                <p>画面最下部を芋虫が横切っています……（歩いている絵文字をタップ！）</p>
+                <p id="p8-msg" style="color:#aaa; font-style:italic; text-align:center; font-size:18px;">「……（お散歩中）」</p>
+                <button class="btn" style="margin-top:30px;" onclick="p8_next()">無視して次へ進む</button>
             </div>
         </div>
 
@@ -261,15 +284,20 @@
                 
                 <h3>📺 共感テスト</h3>
                 <p>テレビで、雨に濡れて震える可哀想な子犬の映像が流れています……</p>
-                <button class="btn btn-neon" onclick="p9_fe_tap()">🥺 心を寄せる（連打）</button>
-                <p id="p9-fe-disp" style="color:var(--error); font-weight:bold;"></p>
+                
+                <!-- ★ Feエフェクトエリア ★ -->
+                <div id="p9-fe-area" style="position:relative; height: 120px; text-align:center;">
+                    <button class="btn btn-neon" onclick="p9_fe_tap()" style="position:relative; z-index:10;">🥺 心を寄せる（連打）</button>
+                </div>
                 
                 <hr style="border-color:#333;">
                 
                 <h3>🛡️ 自己防衛シューティング</h3>
                 <p>向かってくる『悪意のクソ文句』をクリックして撃ち落としてください！</p>
-                <div class="flex-wrap" id="p9-fi-btns"></div>
-                <p>撃ち落とした数: <strong id="p9-fi-count">0</strong> 個</p>
+                
+                <!-- ★ Fiシューティングエリア ★ -->
+                <div id="fi-shooting-area" style="position:relative; height: 220px; background:#111; border-radius:10px; overflow:hidden; border:2px solid #444; margin-bottom:15px;"></div>
+                <p>撃ち落とした数: <strong id="p9-fi-count" style="color:var(--neon); font-size:20px;">0</strong> 個</p>
                 
                 <hr style="border-color:#333;">
                 <button class="btn" onclick="p9_next()">満足したので次へ進む</button>
@@ -320,7 +348,6 @@
 
     <!-- ================= JAVASCRIPT ================= -->
     <script>
-        // --- 状態管理 ---
         let scores = {Ne:0, Ni:0, Se:0, Si:0, Te:0, Ti:0, Fe:0, Fi:0};
         let logs = [];
         let zinType = "";
@@ -328,12 +355,15 @@
         function logAction(msg) { logs.push(msg); }
         function showToast(msg) {
             const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.opacity = 1;
+            t.innerText = msg; t.style.opacity = 1;
             setTimeout(() => { t.style.opacity = 0; }, 3000);
         }
+        function showResMsg(id, isCorrect, msg) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.style.color = isCorrect ? "var(--neon)" : "var(--error)";
+        }
 
-        // --- 画面遷移 ---
         let currentPage = 0;
         function goNext() {
             document.getElementById(`page-${currentPage}`).classList.remove('active');
@@ -343,13 +373,8 @@
                 document.getElementById('progress-text').innerText = `進捗: Part ${currentPage} / 10`;
                 document.getElementById('progress-fill').style.width = `${(currentPage/10)*100}%`;
                 
-                // 芋虫の表示管理
-                if(currentPage === 8) {
-                    document.getElementById('imomushi').style.display = 'block';
-                    startImomushiWalk();
-                } else {
-                    document.getElementById('imomushi').style.display = 'none';
-                }
+                if(currentPage === 8) { document.getElementById('imomushi').style.display = 'block'; startImomushiWalk(); } 
+                else { document.getElementById('imomushi').style.display = 'none'; }
             } else {
                 document.getElementById('progress-container').style.display = 'none';
                 document.getElementById('imomushi').style.display = 'none';
@@ -359,193 +384,127 @@
             
             if(currentPage === 11) calcResult();
             
-            // ページ初期化処理
             if(currentPage===2) p2_start = Date.now();
             if(currentPage===3) initP3();
             if(currentPage===6) initP6();
             if(currentPage===9) initP9();
         }
 
-        // --- Part 0 ---
-        function p0_ignore() {
-            zinType = document.getElementById('zin-input').value || "未入力";
-            scores.Te += 2; logAction("【Te】エラーを無視して目的を優先した"); goNext();
-        }
-        function p0_investigate() {
-            zinType = document.getElementById('zin-input').value || "未入力";
-            scores.Ti += 2; logAction("【Ti】エラーの原因を確認しようとした"); showToast("ドッキリ大成功！");
-            setTimeout(goNext, 1000);
-        }
+        function p0_ignore() { zinType = document.getElementById('zin-input').value || "未入力"; scores.Te += 2; logAction("【Te】エラーを無視して目的を優先した"); goNext(); }
+        function p0_investigate() { zinType = document.getElementById('zin-input').value || "未入力"; scores.Ti += 2; logAction("【Ti】エラーの原因を確認しようとした"); showToast("ドッキリ大成功！"); setTimeout(goNext, 1000); }
 
-        // --- Part 1 ---
-        let p1_start_time = 0;
-        let p1_hints = 0;
-        function p1_start() {
-            p1_start_time = Date.now();
-            document.getElementById('p1-start-btn').style.display = 'none';
-            document.getElementById('p1-content').style.display = 'block';
-        }
-        function p1_hint() {
-            p1_hints++;
-            logAction("【Ni】ヒントを確認した");
-            const d = document.getElementById('p1-hints');
-            if(p1_hints === 1) d.innerText = "ヒント1：口から出るものです";
-            if(p1_hints === 2) d.innerText += "\nヒント2：『○○○』のキャッチボール";
-        }
+        let p1_start_time = 0, p1_hints = 0;
+        function p1_start() { p1_start_time = Date.now(); document.getElementById('p1-start-btn').style.display = 'none'; document.getElementById('p1-content').style.display = 'block'; }
+        function p1_hint() { p1_hints++; logAction("【Ni】ヒントを確認した"); document.getElementById('p1-hints').innerText = p1_hints === 1 ? "ヒント1：口から出るものです" : "ヒント1：口から出るものです\nヒント2：『○○○』のキャッチボール"; }
         function p1_submit() {
-            const a = document.getElementById('p1-ans').value;
-            const t = (Date.now() - p1_start_time) / 1000;
-            if(a.includes("言葉") || a.includes("ことば") || a.includes("コトバ")) {
-                if(p1_hints===0 && t<10) scores.Ni+=6;
-                else if(p1_hints===0) scores.Ni+=4;
-                else scores.Ni+=2;
+            const a = document.getElementById('p1-ans').value; const t = (Date.now() - p1_start_time) / 1000;
+            if(a.includes("言葉") || a.includes("ことば") || a.includes("コトバ") || a.includes("言霊")) {
+                if(p1_hints===0 && t<10) scores.Ni+=6; else if(p1_hints===0) scores.Ni+=4; else scores.Ni+=2;
                 logAction(`【Ni】閃きテスト正解！ (${t.toFixed(1)}秒 / ヒント${p1_hints}回)`);
-                showToast("大正解！"); setTimeout(goNext, 1000);
+                showResMsg('p1-res-msg', true, "大正解！"); setTimeout(goNext, 1500);
             } else {
                 logAction(`【Ni】閃きテスト不正解 (回答: ${a})`);
-                showToast("不正解！正解は「言葉」でした！"); setTimeout(goNext, 1500);
+                showResMsg('p1-res-msg', false, "不正解！正解は「言葉」でした！"); setTimeout(goNext, 1500);
             }
         }
 
-        // --- Part 2 ---
         let p2_start = 0;
         function p2_submit() {
-            const a = document.getElementById('p2-ans').value;
-            const t = (Date.now() - p2_start) / 1000;
-            const d_words = ["不可逆","無常","エントロピー","有限","終焉","退廃","サイクル","死","衰退","栄枯盛衰","輪廻","滅び"];
-            const c_words = ["時間","命","寿命","桜","時計","時の流れ","時間経過","変化","言霊"];
-            if(d_words.some(w => a.includes(w))) {
+            const a = document.getElementById('p2-ans').value; const t = (Date.now() - p2_start) / 1000;
+            const d_w = ["不可逆","無常","エントロピー","有限","終焉","退廃","サイクル","死","衰退","栄枯盛衰","輪廻","運命","滅び"];
+            const c_w = ["時間","命","寿命","桜","時計","時の流れ","終","時間経過","変化"];
+            if(d_w.some(w => a.includes(w))) {
                 scores.Ni += 7; logAction(`【Ni】高度な抽象化テスト大正解！(${a} / ${t.toFixed(1)}秒)`);
-                showToast("素晴らしい！物理法則・哲学を完璧に捉えました！"); setTimeout(goNext, 1500);
-            } else if(c_words.some(w => a.includes(w))) {
-                if(t<5) { scores.Ni+=6; logAction(`【Ni】神速の直感で正解！(${a} / ${t.toFixed(1)}秒)`); showToast("神速の直感！"); }
-                else { scores.Ni+=3; logAction(`【Ni】抽象化正解。(${a} / ${t.toFixed(1)}秒)`); showToast("正解です！"); }
+                showResMsg('p2-res-msg', true, "素晴らしい！物理法則・哲学を完璧に捉えました！"); setTimeout(goNext, 1500);
+            } else if(c_w.some(w => a.includes(w))) {
+                if(t<8) { scores.Ni+=6; logAction(`【Ni】神速の直感で正解！(${a} / ${t.toFixed(1)}秒)`); showResMsg('p2-res-msg', true, "神速の直感！大正解！"); }
+                else { scores.Ni+=3; logAction(`【Ni】抽象化正解。(${a} / ${t.toFixed(1)}秒)`); showResMsg('p2-res-msg', true, "正解です！"); }
                 setTimeout(goNext, 1500);
             } else {
                 logAction(`【Ni】抽象概念不正解 (${a})`);
-                showToast("不正解！正解は「時間」や「無常」でした"); setTimeout(goNext, 1500);
+                showResMsg('p2-res-msg', false, "不正解！正解は「時間」や「無常」でした"); setTimeout(goNext, 1500);
             }
         }
 
-        // --- Part 3 ---
         let p3_tgt = 0, p3_mul = 0, p3_exp = 0;
         function initP3() {
-            p3_tgt = Math.floor(Math.random()*70)+25;
-            p3_mul = Math.floor(Math.random()*5)+2;
+            p3_tgt = Math.floor(Math.random()*70)+25; p3_mul = Math.floor(Math.random()*5)+2;
             document.getElementById('p3-target-disp').innerText = p3_tgt;
-            document.getElementById('p3-ans').placeholder = `入力が『 ${p3_tgt} 』の場合、出力は何になる？`;
         }
         function p3_test() {
             const v = parseInt(document.getElementById('p3-in').value);
-            if(v === p3_tgt) { showToast(`⚠️ 本番クイズの数字『${p3_tgt}』は検証できません！`); return; }
+            if(v === p3_tgt) { showResMsg('p3-res-msg', false, `⚠️ 本番の数字『${p3_tgt}』は検証できません！`); return; }
             let s = 0; String(v).split('').forEach(c => s+=parseInt(c));
             let res = s * p3_mul;
-            if(p3_exp < 5) scores.Ti += 1.5;
-            p3_exp++;
-            logAction(`【Ti】BOXに『${v}』を入力して検証した`);
-            const h = document.getElementById('p3-history');
-            h.innerHTML += `<div>入力： ${v} 👉 出力： ${res}</div>`;
+            if(p3_exp < 6) scores.Ti += 1.0;
+            p3_exp++; logAction(`【Ti】BOXに『${v}』を入力して検証した`);
+            document.getElementById('p3-history').innerHTML += `<div>入力： ${v} 👉 出力： ${res}</div>`;
         }
         function p3_submit() {
             const a = document.getElementById('p3-ans').value;
-            let s = 0; String(p3_tgt).split('').forEach(c => s+=parseInt(c));
-            let correct = String(s * p3_mul);
+            let s = 0; String(p3_tgt).split('').forEach(c => s+=parseInt(c)); let correct = String(s * p3_mul);
             if(a === correct) {
-                scores.Ti += 2.5; logAction(`【Ti】法則を完璧に解明！(検証: ${p3_exp}回)`);
-                showToast("大正解！完璧に解明しました！"); setTimeout(goNext, 1500);
+                scores.Ti += 4.0; logAction(`【Ti】法則を完璧に解明！(検証: ${p3_exp}回)`);
+                showResMsg('p3-res-msg', true, "大正解！完璧に解明しました！"); setTimeout(goNext, 1500);
             } else {
                 logAction(`【Ti】法則解明失敗 (回答: ${a} / 検証: ${p3_exp}回)`);
-                showToast(`残念！正解は『${correct}』でした。`); setTimeout(goNext, 1500);
+                showResMsg('p3-res-msg', false, `残念！正解は『${correct}』でした。`); setTimeout(goNext, 2000);
             }
         }
 
-        // --- Part 4 ---
-        let p4_emps = [
-            {n: "従業員A", p: 95, t: 10, a: "R&D"}, {n: "従業員B", p: 30, t: 85, a: "Support"},
-            {n: "従業員C", p: 60, t: 40, a: "Sales"}, {n: "従業員D", p: 82, t: 75, a: "R&D"},
-            {n: "従業員E", p: 15, t: 90, a: "Support"}, {n: "従業員F", p: 70, t: 70, a: "Sales"},
-            {n: "従業員G", p: 90, t: 80, a: "R&D"}, {n: "従業員H", p: 50, t: 50, a: "Sales"}
-        ];
+        let p4_emps = [{n: "従業員A", p: 95, t: 10, a: "R&D"}, {n: "従業員B", p: 30, t: 85, a: "Support"},{n: "従業員C", p: 60, t: 40, a: "Sales"}, {n: "従業員D", p: 82, t: 75, a: "R&D"},{n: "従業員E", p: 15, t: 90, a: "Support"}, {n: "従業員F", p: 70, t: 70, a: "Sales"},{n: "従業員G", p: 90, t: 80, a: "R&D"}, {n: "従業員H", p: 50, t: 50, a: "Sales"}];
         let p4_idx=0, p4_cor=0, p4_start_t=0;
-        function p4_start() {
-            p4_start_t = Date.now();
-            document.getElementById('p4-start-btn').style.display = 'none';
-            document.getElementById('p4-content').style.display = 'block';
-            p4_update();
-        }
+        function p4_start() { p4_start_t = Date.now(); document.getElementById('p4-start-btn').style.display = 'none'; document.getElementById('p4-content').style.display = 'block'; p4_update(); }
         function p4_update() {
             if(p4_idx >= 8) {
-                let t = (Date.now() - p4_start_t)/1000;
-                let b = 0;
-                if(p4_cor>=6){ if(t<12) b=6.0; else if(t<16) b=4.0; else if(t<22) b=2.0; }
+                let t = (Date.now() - p4_start_t)/1000; let b = 0;
+                if(p4_cor>=6){ if(t<15) b=6.0; else if(t<22) b=4.0; else if(t<30) b=2.0; }
                 scores.Te += (p4_cor*0.4) + b;
                 logAction(`【Te】仕分け業務完了 (正解: ${p4_cor}/8名, タイム: ${t.toFixed(2)}秒)`);
-                showToast(`🎉 業務完了！(正解数: ${p4_cor})`); setTimeout(goNext, 1500);
-                return;
+                showToast(`🎉 業務完了！(正解数: ${p4_cor})`); setTimeout(goNext, 1500); return;
             }
             document.getElementById('p4-emp-name').innerText = `👤 被評価者: ${p4_emps[p4_idx].n} ( ${p4_idx+1}/8 )`;
             document.getElementById('p4-emp-data').innerHTML = `📈 パフォーマンス: <b>${p4_emps[p4_idx].p}%</b> ｜ 🤝 協調性: <b>${p4_emps[p4_idx].t}%</b>`;
         }
-        function p4_sort(ans) {
-            if(ans === p4_emps[p4_idx].a) p4_cor++;
-            p4_idx++; p4_update();
-        }
+        function p4_sort(ans) { if(ans === p4_emps[p4_idx].a) p4_cor++; p4_idx++; p4_update(); }
 
-        // --- Part 5 ---
         let p5_lvl=1, p5_tgt="";
-        function p5_start() {
-            document.getElementById('p5-step-start').style.display = 'none';
-            p5_tgt = String(Math.floor(Math.random()*9000)+1000);
-            p5_play();
-        }
+        function p5_start() { document.getElementById('p5-step-start').style.display = 'none'; p5_tgt = String(Math.floor(Math.random()*9000)+1000); p5_play(); }
         async function p5_play() {
-            document.getElementById('p5-step-show').style.display = 'block';
-            document.getElementById('p5-step-ans').style.display = 'none';
-            let d = document.getElementById('p5-display');
-            await new Promise(r => setTimeout(r, 500));
-            for(let c of p5_tgt) {
-                d.innerText = c; await new Promise(r => setTimeout(r, 400));
-                d.innerText = ""; await new Promise(r => setTimeout(r, 200));
-            }
-            document.getElementById('p5-step-show').style.display = 'none';
-            document.getElementById('p5-step-ans').style.display = 'block';
-            document.getElementById('p5-ans').value = "";
+            document.getElementById('p5-step-show').style.display = 'block'; document.getElementById('p5-step-ans').style.display = 'none';
+            let d = document.getElementById('p5-display'); await new Promise(r => setTimeout(r, 500));
+            for(let c of p5_tgt) { d.innerText = c; await new Promise(r => setTimeout(r, 400)); d.innerText = ""; await new Promise(r => setTimeout(r, 200)); }
+            document.getElementById('p5-step-show').style.display = 'none'; document.getElementById('p5-step-ans').style.display = 'block'; document.getElementById('p5-ans').value = "";
         }
         function p5_submit() {
             if(document.getElementById('p5-ans').value === p5_tgt) {
-                scores.Si += 2.0; p5_lvl++; showToast(`正解！次はレベル${p5_lvl}！`);
+                scores.Si += 2.0; p5_lvl++; showResMsg('p5-res-msg', true, `正解！次はレベル${p5_lvl}！`);
                 p5_tgt = ""; for(let i=0;i<4+(p5_lvl-1)*2;i++) p5_tgt += Math.floor(Math.random()*10);
-                setTimeout(p5_play, 1000);
+                setTimeout(() => { document.getElementById('p5-res-msg').innerText=""; p5_play(); }, 1000);
             } else {
                 logAction(`【Si】記憶テスト終了 (到達レベル: ${p5_lvl})`);
-                showToast("❌ 残念！そこまで！"); setTimeout(goNext, 1500);
+                showResMsg('p5-res-msg', false, "❌ 残念！そこまで！"); setTimeout(goNext, 1500);
             }
         }
 
-        // --- Part 6 ---
         let p6_ans = "";
         function initP6() {
-            const arr = ["A","B","C","D"];
-            p6_ans = arr[Math.floor(Math.random()*4)];
+            const arr = ["A","B","C","D"]; p6_ans = arr[Math.floor(Math.random()*4)];
             let r=Math.floor(Math.random()*150)+50, g=Math.floor(Math.random()*150)+50, b=Math.floor(Math.random()*150)+50;
-            let c1 = `rgb(${r},${g},${b})`; let c2 = `rgb(${Math.min(255,r+18)},${g},${b})`;
-            let html = "";
+            let c1 = `rgb(${r},${g},${b})`; let c2 = `rgb(${Math.min(255,r+18)},${g},${b})`; let html = "";
             for(let x of arr) {
                 let c = (x===p6_ans) ? c2 : c1;
-                html += `<div>
-                    <div style="background-color:${c}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">${x}</div>
-                    <button class="btn" style="margin-top:5px;" onclick="p6_submit('${x}')">${x}を指差す</button>
-                </div>`;
+                html += `<div><div style="background-color:${c}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">${x}</div>
+                    <button class="btn" style="margin-top:5px;" onclick="p6_submit('${x}')">${x}を指す</button></div>`;
             }
             document.getElementById('p6-tiles').innerHTML = html;
         }
         function p6_submit(ans) {
-            if(ans===p6_ans){ scores.Se+=0.5; logAction("【Se】色彩感覚テスト: 正解"); showToast("大正解！"); }
-            else { logAction(`【Se】色彩感覚テスト: 不正解`); showToast(`正解は『${p6_ans}』でした！`); }
+            if(ans===p6_ans){ scores.Se+=0.5; logAction("【Se】色彩感覚テスト: 正解"); showResMsg('p6-res-msg', true, "大正解！"); }
+            else { logAction(`【Se】色彩感覚テスト: 不正解`); showResMsg('p6-res-msg', false, `残念！正解は『${p6_ans}』でした！`); }
             setTimeout(goNext, 1500);
         }
 
-        // --- Part 7 : Web Audio ドラム & チキン ---
         let p7_d_count=0, p7_t_start=0, p7_t_state="start";
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
@@ -555,40 +514,25 @@
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             let t = audioCtx.currentTime;
-            if(type==='kick') {
-                osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.5);
-                gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-            } else if(type==='snare') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(250, t);
-                gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
-            } else {
-                osc.type = 'square'; osc.frequency.setValueAtTime(800, t);
-                gain.gain.setValueAtTime(0.5, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-            }
+            if(type==='kick') { osc.frequency.setValueAtTime(300, t); osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.5); gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5); } 
+            else if(type==='snare') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, t); gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2); } 
+            else { osc.type = 'square'; osc.frequency.setValueAtTime(1000, t); gain.gain.setValueAtTime(0.5, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1); }
             osc.start(t); osc.stop(t + 0.5);
             document.getElementById('p7-emojis').innerText += ["🎵","🥁","🎶","🎷","💥","✨"][Math.floor(Math.random()*6)];
         }
         function p7_timerToggle() {
             let b = document.getElementById('p7-timer-btn');
-            if(p7_t_state==="start") {
-                p7_t_start = Date.now(); p7_t_state="running";
-                b.innerText = "ストップ！"; b.classList.add("btn-danger");
-                document.getElementById('p7-timer-res').innerText = "⏱️ 計測中...";
-            } else if(p7_t_state==="running") {
-                let diff = (Date.now() - p7_t_start)/1000;
-                let err = Math.abs(10.0 - diff);
+            if(p7_t_state==="start") { p7_t_start = Date.now(); p7_t_state="running"; b.innerText = "ストップ！"; b.classList.add("btn-danger"); document.getElementById('p7-timer-res').innerText = "⏱️ 計測中..."; } 
+            else if(p7_t_state==="running") {
+                let diff = (Date.now() - p7_t_start)/1000; let err = Math.abs(10.0 - diff);
                 if(err<=0.15) scores.Se += 6.0; else if(err<=0.5) scores.Se += 3.0;
                 logAction(`【Se】チキンレース: ${diff.toFixed(2)}秒 (誤差 ${err.toFixed(2)}秒)`);
                 document.getElementById('p7-timer-res').innerText = `記録: ${diff.toFixed(2)}秒 (誤差 ${err.toFixed(2)}秒)`;
                 b.style.display="none"; document.getElementById('p7-next-btn').style.display="block";
             }
         }
-        function p7_next() {
-            logAction(`【Se】陽キャバスを ${p7_d_count}回 叩いた`);
-            scores.Se += Math.min(p7_d_count * 0.1, 5.0); goNext();
-        }
+        function p7_next() { logAction(`【Se】陽キャバスを ${p7_d_count}回 叩いた`); scores.Se += Math.min(p7_d_count * 0.1, 5.0); goNext(); }
 
-        // --- Part 8 : 芋虫アニメーション ---
         let imo_clicks=0, imo_crush=false, imo_pos=0, imo_dir=1, imo_req;
         function startImomushiWalk() {
             function walk() {
@@ -596,61 +540,66 @@
                 imo_pos += imo_dir * 0.4;
                 if(imo_pos > 90) imo_dir = -1; if(imo_pos < 0) imo_dir = 1;
                 let el = document.getElementById('imomushi');
-                el.style.left = imo_pos + '%';
-                el.style.transform = imo_dir===1 ? 'scaleX(-1)' : 'scaleX(1)';
+                el.style.left = imo_pos + '%'; el.style.transform = imo_dir===1 ? 'scaleX(-1)' : 'scaleX(1)';
                 imo_req = requestAnimationFrame(walk);
             }
             imo_req = requestAnimationFrame(walk);
         }
         function touchImomushi() {
             if(currentPage !== 8 || imo_crush) return;
-            imo_clicks++;
-            let m = document.getElementById('p8-msg');
-            if(imo_clicks<5) m.innerText = "「何だね？私は考え事に耽りながら散歩中だ。」";
+            imo_clicks++; let m = document.getElementById('p8-msg');
+            if(imo_clicks<5) m.innerText = "「何だね？僕は考え事に耽りながら散歩中だ。」";
             else if(imo_clicks<10) m.innerText = "「おいおい、むやみに触らないでくれたまえ。」";
             else if(imo_clicks<15) m.innerText = "「……お前僕を怒らせたいのか？」";
             else if(imo_clicks<25) m.innerText = "「しつこいな！お前、SLEか！？やめろ！」";
             else if(imo_clicks<30) m.innerText = "「やめろと言っているだろう！や、やめ…！！」";
-            else {
-                imo_crush=true; cancelAnimationFrame(imo_req);
-                document.getElementById('imomushi').innerText = "💥";
-                m.innerHTML = "<span style='color:red;'>無残にも潰されてしまった…</span>";
-            }
+            else { imo_crush=true; cancelAnimationFrame(imo_req); document.getElementById('imomushi').innerText = "💥"; m.innerHTML = "<span style='color:red;'>無残にも潰されてしまった…</span>"; }
         }
         function p8_next() {
             if(imo_crush){ scores.Se+=3; scores.Te+=3; logAction("【Se/Te】芋虫を30回つついて無残にも潰した"); }
             else { logAction(`【Se/Te】芋虫を ${imo_clicks}回 つついて放置した`); }
-            document.getElementById('imomushi').style.display = 'none';
-            goNext();
+            document.getElementById('imomushi').style.display = 'none'; goNext();
         }
 
-        // --- Part 9 : Fe/Fi ---
         let p9_fe=0, p9_fi=0;
-        let fi_words = ["空気読め","自己中","使えない","お前はダメだ","調子乗んな"];
+        let fi_words = ["空気読め","自己中","使えない","お前はダメだ","調子乗んな","期待外れ","ノリ悪い","生意気","痛い奴","常識ない"];
         function initP9() {
-            let html = "";
-            fi_words.forEach((w,i) => { html += `<button class="btn btn-danger" style="width:auto; padding:8px 15px;" id="fi-w-${i}" onclick="p9_fi_shoot(${i})">💥 ${w}</button>`; });
-            document.getElementById('p9-fi-btns').innerHTML = html;
+            const area = document.getElementById('fi-shooting-area'); area.innerHTML = '';
+            for(let i=0; i<5; i++) spawnFiWord(area);
         }
         function p9_fe_tap() {
-            p9_fe++; let d = document.getElementById('p9-fe-disp');
-            d.innerText += "🥺可哀想… ";
+            p9_fe++;
+            const p = document.createElement('div');
+            p.innerText = ["可哀想🐶", "可哀想🥺", "💖", "可哀想☔"][Math.floor(Math.random()*4)];
+            p.className = 'particle';
+            p.style.left = (Math.random() * 80 + 10) + '%';
+            p.style.top = '100%';
+            document.getElementById('p9-fe-area').appendChild(p);
+            setTimeout(() => p.remove(), 1000);
         }
-        function p9_fi_shoot(i) {
-            p9_fi++; document.getElementById('p9-fi-count').innerText = p9_fi;
-            let nw = ["期待外れ","ノリ悪い","生意気","痛い奴","常識ない","言い訳すんな","やる気あんの？","自己満足","綺麗事"][Math.floor(Math.random()*9)];
-            document.getElementById(`fi-w-${i}`).innerText = `💥 ${nw}`;
+        function spawnFiWord(area) {
+            if(currentPage !== 9) return;
+            const b = document.createElement('button');
+            b.className = 'btn btn-danger fi-target';
+            b.innerText = fi_words[Math.floor(Math.random()*fi_words.length)];
+            b.style.left = Math.random() * 70 + '%';
+            b.style.top = Math.random() * 70 + '%';
+            b.onclick = function() {
+                p9_fi++; document.getElementById('p9-fi-count').innerText = p9_fi;
+                b.innerText = "💥"; b.style.background = "transparent"; b.style.borderColor = "transparent";
+                setTimeout(() => { b.remove(); spawnFiWord(area); }, 200);
+            };
+            area.appendChild(b);
         }
         function p9_next() {
             let fe_s = p9_fe<=30 ? p9_fe*0.5 : 15.0; let se_fe = p9_fe<=30 ? 0 : (p9_fe-30)*0.2;
             let fi_s = p9_fi<=30 ? p9_fi*0.5 : 15.0; let se_fi = p9_fi<=30 ? 0 : (p9_fi-30)*0.2;
             scores.Fe += fe_s; scores.Fi += fi_s; scores.Se += (se_fe + se_fi);
-            logAction(`【Fe/Se】子犬に ${p9_fe}回 心を寄せた (Fe:+${fe_s}, 暴走Se:+${se_fe.toFixed(1)})`);
-            logAction(`【Fi/Se】悪口を ${p9_fi}個 撃ち落とした (Fi:+${fi_s}, 暴走Se:+${se_fi.toFixed(1)})`);
+            logAction(`【Fe/Se】子犬に ${p9_fe}回 心を寄せた (Fe:+${fe_s.toFixed(1)}, 暴走Se:+${se_fe.toFixed(1)})`);
+            logAction(`【Fi/Se】悪口を ${p9_fi}個 撃ち落とした (Fi:+${fi_s.toFixed(1)}, 暴走Se:+${se_fi.toFixed(1)})`);
             goNext();
         }
 
-        // --- Part 10 ---
         function p10_submit() {
             let v = document.getElementById('p10-ans').value;
             let w = v.split(/[、,]/).map(x=>x.trim()).filter(x=>x);
@@ -659,7 +608,6 @@
             goNext();
         }
 
-        // --- Part 11 : RESULT ---
         const stacks = {
             "INTJ": {Ni: 10, Te: 7, Fi: 1, Se: -3}, "INFJ": {Ni: 10, Fe: 7, Ti: 1, Se: -3},
             "INTP": {Ti: 10, Ne: 7, Si: 1, Fe: -3}, "INFP": {Fi: 10, Ne: 7, Si: 1, Te: -3},
@@ -694,27 +642,19 @@
         
         function calcResult() {
             document.getElementById('r-zin').innerText = zinType;
-            
-            // コサイン類似度
             let res = [];
             for(let m in stacks) {
-                let idl = stacks[m];
-                let dp=0, u_sq=0, i_sq=0;
-                for(let k in idl) {
-                    let u = scores[k]||0; let i = idl[k];
-                    dp += u*i; u_sq += u*u; i_sq += i*i;
-                }
+                let idl = stacks[m]; let dp=0, u_sq=0, i_sq=0;
+                for(let k in idl) { let u = scores[k]||0; let i = idl[k]; dp += u*i; u_sq += u*u; i_sq += i*i; }
                 let sim = (u_sq===0||i_sq===0) ? 0 : dp/(Math.sqrt(u_sq)*Math.sqrt(i_sq));
                 res.push({m: m, s: Math.max(0, sim)});
             }
             res.sort((a,b)=>b.s - a.s);
-            ranks_arr = res;
-            est_mbti = res[0].m;
+            ranks_arr = res; est_mbti = res[0].m;
             
             document.getElementById('r-mbti').innerText = "あなたの真のタイプ：" + est_mbti;
             document.getElementById('r-desc').innerHTML = `💡 <b>【${est_mbti}の概要】</b><br>${descs[est_mbti]}`;
             
-            // グラフ描画
             let max_s = Math.max(...Object.values(scores), 1);
             let gh = "";
             for(let k in scores) {
@@ -729,17 +669,11 @@
             }
             document.getElementById('r-graph').innerHTML = gh;
             
-            // ランキング描画
             let rh = "";
-            for(let i=0; i<5; i++) {
-                rh += `<div style="font-size:18px; margin:10px 0;">👑 ${i+1}位: <b style="color:var(--neon);">${res[i].m}</b> <span style="color:#aaa; font-size:14px;">(一致度 ${(res[i].s*100).toFixed(1)}%)</span></div>`;
-            }
+            for(let i=0; i<5; i++) { rh += `<div style="font-size:18px; margin:10px 0;">👑 ${i+1}位: <b style="color:var(--neon);">${res[i].m}</b> <span style="color:#aaa; font-size:14px;">(一致度 ${(res[i].s*100).toFixed(1)}%)</span></div>`; }
             document.getElementById('r-ranking').innerHTML = rh;
-            
-            // ログ
             document.getElementById('r-logs').value = logs.join("\n");
             
-            // ダーリンちゃん
             let z_up = zinType.toUpperCase();
             let is_sp = z_up.includes("INTJ")||z_up.includes("LII")||z_up.includes("ILI");
             let is_m = z_up.includes(est_mbti) || (est_mbti==="INTJ" && (z_up.includes("LII")||z_up.includes("ILI"))) || (est_mbti==="INTP" && (z_up.includes("LII")||z_up.includes("ILE")));
@@ -753,47 +687,29 @@
             }
             document.getElementById('r-darling').innerHTML = dh;
             
-            // GAS自動送信 (mode: no-cors を使用してブロック回避)
             const gas_url = "https://script.google.com/macros/s/AKfycby3mkiLQb-65eUQG0x_CuVO-amPwEbJypZK9-Ecp3zY-F5C-H7Qg2_2F1QCGEp_Lv5N_g/exec";
-            fetch(gas_url, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({mbti: est_mbti, zin: zinType, scores: scores, logs: logs.join("\n")})
-            }).then(() => showToast("📨 診断結果を送信しました！")).catch(e => console.log(e));
+            fetch(gas_url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({mbti: est_mbti, zin: zinType, scores: scores, logs: logs.join("\n")}) }).catch(e => console.log(e));
         }
 
-        function copyLogs() {
-            navigator.clipboard.writeText(document.getElementById('r-logs').value).then(() => showToast("📋 ログをコピーしました！"));
-        }
+        function copyLogs() { navigator.clipboard.writeText(document.getElementById('r-logs').value).then(() => showToast("📋 ログをコピーしました！")); }
 
         function shareResult() {
             if(navigator.share) {
-                navigator.share({
-                    title: '認知機能ダイブ・シミュレーター',
-                    text: `【診断結果】私の真のタイプは『${est_mbti}』でした！\n体感型・認知機能シミュレーター、あなたもやってみて！`,
-                    url: window.location.href
-                }).catch(e=>console.log(e));
-            } else {
-                showToast("お使いのブラウザは共有機能に非対応です。URLをコピーしてください！");
-            }
+                navigator.share({ title: '認知機能ダイブ・シミュレーター', text: `【診断結果】私の真のタイプは『${est_mbti}』でした！\n体感型・認知機能シミュレーター、あなたもやってみて！`, url: window.location.href }).catch(e=>console.log(e));
+            } else { showToast("お使いのブラウザは共有機能に非対応です。URLをコピーしてください！"); }
         }
         
         function downloadCard() {
-            const cvs = document.getElementById('result-canvas');
-            const ctx = cvs.getContext('2d');
+            const cvs = document.getElementById('result-canvas'); const ctx = cvs.getContext('2d');
             ctx.fillStyle = '#1e1e1e'; ctx.fillRect(0,0,700,450);
             ctx.strokeStyle = '#4CAF50'; ctx.lineWidth = 4; ctx.strokeRect(10,10,680,430);
             ctx.fillStyle = '#888'; ctx.font = '20px sans-serif'; ctx.fillText('NEXT GENERATION MBTI CARD', 30, 40);
             ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 30px sans-serif'; ctx.fillText(`ESTIMATED: ${est_mbti}`, 30, 80);
             ctx.fillStyle = '#FFF'; ctx.font = '16px sans-serif'; ctx.fillText(`Self-Assessed: ${zinType}`, 30, 110);
             ctx.fillStyle = '#888'; ctx.fillText('TOP MATCHES:', 30, 160);
-            for(let i=0; i<3; i++) {
-                ctx.fillStyle = '#FFF'; ctx.fillText(`${i+1}. ${ranks_arr[i].m} (${(ranks_arr[i].s*100).toFixed(1)}%)`, 30, 190+(i*30));
-            }
+            for(let i=0; i<3; i++) { ctx.fillStyle = '#FFF'; ctx.fillText(`${i+1}. ${ranks_arr[i].m} (${(ranks_arr[i].s*100).toFixed(1)}%)`, 30, 190+(i*30)); }
             ctx.fillStyle = '#888'; ctx.fillText('COGNITIVE FUNCTION GRAPH:', 320, 40);
-            let max_s = Math.max(...Object.values(scores), 1);
-            let y = 80;
+            let max_s = Math.max(...Object.values(scores), 1); let y = 80;
             for(let k in scores) {
                 ctx.fillStyle = '#FFF'; ctx.fillText(k, 320, y);
                 let w = (scores[k]/max_s)*250;
@@ -801,10 +717,7 @@
                 ctx.fillStyle = '#888'; ctx.fillText(scores[k].toFixed(1), 370+w, y-2);
                 y += 40;
             }
-            const a = document.createElement('a');
-            a.href = cvs.toDataURL("image/png");
-            a.download = `mbti_result_${est_mbti}.png`;
-            a.click();
+            const a = document.createElement('a'); a.href = cvs.toDataURL("image/png"); a.download = `mbti_result_${est_mbti}.png`; a.click();
         }
     </script>
 </body>
