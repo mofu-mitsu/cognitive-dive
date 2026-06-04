@@ -15,7 +15,7 @@
     <title>認知機能ダイブ・シミュレーター 〜体感型MBTI / モデルG的測定〜</title>
     <meta name="description" content="思い込み（自認）を徹底的に排除し、リアルな行動やブラックボックスの検証プロセスからあなたの『真の認知機能（8つの心理機能）』を精密にデコードする体感型シミュレーター。16タイプ一致度ランキングや詳細な行動ログを出力！">
     <meta name="keywords" content="MBTI, 認知機能, 心理機能, ソシオニクス, モデルG, 体感型診断, INTJ, LII, ブラックボックス">
-    <meta name="author" content="みつき">
+    <meta name="author" content="M&2K">
     
     <!-- 📱 OGPタグ (X/Twitter, Discord, LINE等で画像付きで表示される設定) -->
     <meta property="og:title" content="認知機能ダイブ・シミュレーター 〜体感型MBTI / モデルG的測定〜">
@@ -34,20 +34,778 @@
     <!-- ファビコン (🧠の絵文字) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;
-            background-color: #111111; color: #ffffff; font-family: sans-serif;
+        :root {
+            --bg: #111111;
+            --panel: #1e1e1e;
+            --neon: #4CAF50;
+            --neon-glow: rgba(76, 175, 80, 0.4);
+            --text: #ffffff;
+            --error: #ff4b4b;
         }
-        /* 画面いっぱいにStreamlitを極めて美しく埋め込むための設定 */
-        iframe {
-            border: none; width: 100%; height: 100%;
+        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
+        
+        .main-title-box {
+            text-align: center; background: linear-gradient(135deg, #1b4d3e, #111111);
+            padding: 30px; border-radius: 15px; border: 2px solid var(--neon);
+            box-shadow: 0 4px 20px var(--neon-glow); margin-bottom: 30px;
         }
+        .main-title-box h1 { margin: 0; font-size: 32px; color: var(--neon); text-shadow: 0 0 10px var(--neon-glow); }
+        .main-title-box p { margin-top: 10px; color: #aaa; font-weight: bold; }
+        
+        .btn {
+            background-color: #2b2b2b; color: white; border: 2px solid #444; border-radius: 10px;
+            padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            width: 100%; box-sizing: border-box; margin: 5px 0; text-align: center;
+        }
+        .btn:hover { background-color: #444; border-color: var(--neon); transform: scale(1.02); }
+        .btn-neon { border-color: var(--neon); background-color: rgba(76,175,80,0.1); color: var(--neon); }
+        .btn-neon:hover { background-color: var(--neon); color: var(--bg); box-shadow: 0 0 15px var(--neon-glow); }
+        .btn-danger { border-color: var(--error); color: var(--error); }
+        .btn-danger:hover { background-color: var(--error); color: white; }
+        
+        input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222;
+            color: white; font-size: 16px; box-sizing: border-box; margin-bottom: 15px;
+        }
+        .card { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .toast { position: fixed; top: 20px; right: 20px; background: var(--neon); color: #000; padding: 15px 25px; border-radius: 8px; font-weight: bold; z-index: 10000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        
+        .page { display: none; animation: fadeIn 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .progress-bar { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon); width: 0%; transition: width 0.3s; }
+        
+        #imomushi { position: fixed; bottom: 10px; left: 0; font-size: 40px; cursor: pointer; user-select: none; z-index: 9999; display: none; }
+        .grid-cols { display: flex; gap: 10px; }
+        .grid-cols > div { flex: 1; }
+        .flex-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
     </style>
 </head>
 <body>
-    <!-- ⚠️ ここに、みつきがStreamlit Cloudでデプロイした本番URLの末尾に「?embed=true」を付けて貼り付ける！ -->
-    <!-- これを付けることで、Streamlit標準の余計なヘッダーやフッターを非表示にして一体化できるよ！ -->
-    <iframe src="https://cognitive-dive.streamlit.app/?embed=true"></iframe>
+    <div id="toast" class="toast">メッセージ</div>
+    <div id="imomushi" onclick="touchImomushi()">🐛</div>
+
+    <div class="container">
+        <a href="https://mofu-mitsu.github.io/lab.html" class="btn" style="display:inline-block; width:auto; margin-bottom:20px; text-decoration:none;"><i class="fa-solid fa-house"></i> ホームに戻る</a>
+        
+        <div id="progress-container" style="display:none;">
+            <div style="text-align: right; color:#888; font-weight:bold; margin-bottom:5px;" id="progress-text">進捗: 1 / 10</div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <hr style="border-color:#333;">
+        </div>
+
+        <!-- ================= PAGE 0 ================= -->
+        <div id="page-0" class="page active">
+            <div class="main-title-box">
+                <h1><i class="fa-solid fa-brain"></i> 認知機能ダイブ</h1>
+                <p>〜 体感型MBTI / モデルG的 測定アプローチ 〜</p>
+            </div>
+            <div class="card">
+                <h3>💡 まずは、あなたの自認タイプを教えてね！</h3>
+                <input type="text" id="zin-input" placeholder="例：INTJ、LII、INTP 等">
+                
+                <div style="background-color: #ffe6e6; border-left: 5px solid #ff4b4b; padding: 15px; border-radius: 5px; color: #d32f2f; font-weight: bold; margin: 20px 0;">
+                    ⚠️ 警告：セッションID[0x9A4F]が破損しています。
+                </div>
+                <div class="grid-cols">
+                    <div><button class="btn" onclick="p0_ignore()">無視して診断を始める</button></div>
+                    <div><button class="btn" onclick="p0_investigate()">エラーの詳細を確認する</button></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 1 : Ni 閃き ================= -->
+        <div id="page-1" class="page">
+            <div class="card">
+                <h2>🧠 Part 1: 閃きの降臨</h2>
+                <p>直感で本質を当てて！「あ、わかった！」という感覚が降ってきたら入力してね。</p>
+                <button class="btn btn-neon" id="p1-start-btn" onclick="p1_start()">謎解きを見る</button>
+                <div id="p1-content" style="display:none; margin-top:15px;">
+                    <div style="background:#222; padding:15px; border-left:4px solid var(--neon); margin-bottom:15px;">
+                        『見えない刃。人を傷つけることも、癒すこともできる。形はないが、一生残る。』
+                    </div>
+                    <div id="p1-hints" style="color:#ffb74d; margin-bottom:15px; font-weight:bold;"></div>
+                    <input type="text" id="p1-ans" placeholder="これは何？">
+                    <div class="grid-cols">
+                        <div><button class="btn" onclick="p1_hint()">ヒントを見る👀</button></div>
+                        <div><button class="btn btn-neon" onclick="p1_submit()">決定！</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2 : Ni 概念 ================= -->
+        <div id="page-2" class="page">
+            <div class="card">
+                <h2>🔮 Part 2: 共通概念の抽出</h2>
+                <p>Q. 以下の3つの事象から連想される、この宇宙の<strong>『避けることのできない絶対法則（共通の本質）』</strong>を1単語で抽出してください。</p>
+                <div style="background:#222; padding:15px; border-left:4px solid var(--neon); margin-bottom:15px;">
+                    ・落ちる砂時計 ｜ ・燃えて短くなるロウソク ｜ ・散っていく桜
+                </div>
+                <input type="text" id="p2-ans" placeholder="本質を見抜いて入力！">
+                <button class="btn btn-neon" onclick="p2_submit()">決定！</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 3 : Ti ブラックボックス ================= -->
+        <div id="page-3" class="page">
+            <div class="card">
+                <h2>⚙️ Part 3: 機械の法則検証</h2>
+                <p>目の前に『謎の変換マシン』があります。数字を入れて検証し、背後にある【法則】を解明してください！</p>
+                <input type="number" id="p3-in" placeholder="検証用の数字を入力">
+                <button class="btn" onclick="p3_test()">この数字で検証する</button>
+                
+                <div id="p3-history" style="margin-top:15px; background:#111; padding:10px; border-radius:5px; font-family:monospace; color:var(--neon);"></div>
+                
+                <hr style="border-color:#333;">
+                <p>❓ 法則が見えてきましたか？ 本番クイズです。</p>
+                <input type="text" id="p3-ans" placeholder="入力が『 <span id='p3-target-disp'></span> 』の場合、出力は何になる？">
+                <button class="btn btn-neon" onclick="p3_submit()">法則を解明したので決定！</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 4 : Te 仕分け ================= -->
+        <div id="page-4" class="page">
+            <div class="card">
+                <h2>💼 Part 4: 従業員高速仕分け業務</h2>
+                <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:15px; font-size:14px;">
+                    📊 仕分けルール：<br>
+                    ・<strong>【🏠 R&D部門】</strong>：パフォーマンス 80%以上<br>
+                    ・<strong>【📞 Support部門】</strong>：協調性 80%以上 (かつパフォーマンス80%未満)<br>
+                    ・<strong>【💼 Sales部門】</strong>：それ以外
+                </div>
+                
+                <button class="btn btn-neon" id="p4-start-btn" onclick="p4_start()">仕分け業務を開始する！</button>
+                
+                <div id="p4-content" style="display:none; margin-top:15px;">
+                    <h3 id="p4-emp-name"></h3>
+                    <p id="p4-emp-data"></p>
+                    <div class="grid-cols">
+                        <div><button class="btn" onclick="p4_sort('R&D')">🏠 R&D</button></div>
+                        <div><button class="btn" onclick="p4_sort('Support')">📞 Support</button></div>
+                        <div><button class="btn" onclick="p4_sort('Sales')">💼 Sales</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 5 : Si 記憶 ================= -->
+        <div id="page-5" class="page">
+            <div class="card">
+                <h2>💾 Part 5: 記憶サバイバル</h2>
+                <div id="p5-step-start">
+                    <button class="btn btn-neon" onclick="p5_start()">記憶テストを開始！</button>
+                </div>
+                <div id="p5-step-show" style="display:none; text-align:center;">
+                    <div id="p5-display" style="font-size:80px; color:var(--error); font-weight:bold; height:100px;"></div>
+                </div>
+                <div id="p5-step-ans" style="display:none;">
+                    <input type="text" id="p5-ans" placeholder="数字を入力！">
+                    <button class="btn btn-neon" onclick="p5_submit()">決定！</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 6 : Se 色彩 ================= -->
+        <div id="page-6" class="page">
+            <div class="card">
+                <h2>🎨 Part 6: 微細な差異の感知</h2>
+                <p>Q. 1つだけ微妙に違う色のタイルをクリックして見抜いてください！</p>
+                <div class="grid-cols" id="p6-tiles" style="margin-bottom:15px;"></div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 7 : Se ドラム & チキン ================= -->
+        <div id="page-7" class="page">
+            <div class="card">
+                <h2>🥁 Part 7: 感覚とスリル</h2>
+                
+                <h3>🪘 陽キャバス</h3>
+                <p>自由に叩ける楽器があります！</p>
+                <div class="grid-cols">
+                    <div><button class="btn btn-neon" onclick="playDrum('kick')">🥁 キック</button></div>
+                    <div><button class="btn btn-neon" onclick="playDrum('snare')">🥁 スネア</button></div>
+                    <div><button class="btn btn-neon" style="color:#ffdd57; border-color:#ffdd57;" onclick="playDrum('hihat')">🎷 シンバル</button></div>
+                </div>
+                <h2 id="p7-emojis" style="text-align:center; letter-spacing:5px; height:40px; overflow:hidden;"></h2>
+                
+                <hr style="border-color:#333;">
+                
+                <h3>⏱️ 10秒チキンレース</h3>
+                <p>タイマーは見えません。感覚だけで『ピッタリ10.00秒』でストップを押して！</p>
+                <button class="btn" id="p7-timer-btn" onclick="p7_timerToggle()">スタート！</button>
+                <p id="p7-timer-res" style="color:var(--neon); font-weight:bold;"></p>
+                <button class="btn btn-neon" id="p7-next-btn" style="display:none;" onclick="p7_next()">次へ進む</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 8 : 芋虫 ================= -->
+        <div id="page-8" class="page">
+            <div class="card">
+                <h2>🐛 Part 8: LSI-Ni 芋虫襲来</h2>
+                <p>画面を芋虫が横切っています……（画面下を歩いている絵文字をタップ！）</p>
+                <p id="p8-msg" style="color:#aaa; font-style:italic;">「……（お散歩中）」</p>
+                <button class="btn" onclick="p8_next()">無視して次へ進む</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 9 : Fe/Fi ================= -->
+        <div id="page-9" class="page">
+            <div class="card">
+                <h2>💖 Part 9: 感情の防衛と共感</h2>
+                
+                <h3>📺 共感テスト</h3>
+                <p>テレビで、雨に濡れて震える可哀想な子犬の映像が流れています……</p>
+                <button class="btn btn-neon" onclick="p9_fe_tap()">🥺 心を寄せる（連打）</button>
+                <p id="p9-fe-disp" style="color:var(--error); font-weight:bold;"></p>
+                
+                <hr style="border-color:#333;">
+                
+                <h3>🛡️ 自己防衛シューティング</h3>
+                <p>向かってくる『悪意のクソ文句』をクリックして撃ち落としてください！</p>
+                <div class="flex-wrap" id="p9-fi-btns"></div>
+                <p>撃ち落とした数: <strong id="p9-fi-count">0</strong> 個</p>
+                
+                <hr style="border-color:#333;">
+                <button class="btn" onclick="p9_next()">満足したので次へ進む</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 10 : Ne ================= -->
+        <div id="page-10" class="page">
+            <div class="card">
+                <h2>🌪️ Part 10: 思考の広がり</h2>
+                <p>『りんご』から連想するものを「、」で区切って思いつく限り入力して！</p>
+                <textarea id="p10-ans" rows="4" placeholder="例：赤、丸い、青森、ニュートン"></textarea>
+                <button class="btn btn-neon" onclick="p10_submit()">決定して結果を見る！</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 11 : RESULT ================= -->
+        <div id="page-11" class="page">
+            <div style="text-align:center;"><h2 style="color:var(--neon);">🎉 全てのシミュレーションが完了しました！</h2></div>
+            <p>👤 あなたの自認タイプ: <b id="r-zin"></b></p>
+            <div class="result-mbti" id="r-mbti"></div>
+            
+            <div class="card" style="background:#111;">
+                <p id="r-desc" style="line-height:1.6;"></p>
+            </div>
+            
+            <h3>📊 心理機能スコア</h3>
+            <div class="card" id="r-graph"></div>
+            
+            <h3>📊 16タイプ一致度ランキング</h3>
+            <div class="card" id="r-ranking"></div>
+            
+            <div class="card" id="r-darling" style="background-color: #2b111a; border: 2px solid #f06292; color: #f48fb1; font-weight:bold;"></div>
+            
+            <hr style="border-color:#333;">
+            <h3>📜 あなたの行動生ログ</h3>
+            <textarea id="r-logs" rows="8" readonly></textarea>
+            <button class="btn btn-neon" onclick="copyLogs()">📋 ログをコピーする</button>
+            
+            <canvas id="result-canvas" width="700" height="450" style="display:none;"></canvas>
+            <button class="btn btn-neon" style="margin-top:10px;" onclick="downloadCard()">💾 診断結果カードを画像保存</button>
+            
+            <button class="btn" style="margin-top:10px; border-color:#ff4b4b; color:#ff4b4b;" onclick="shareResult()">📱 SNSでシェアする！</button>
+            <button class="btn" style="margin-top:10px;" onclick="location.reload()">最初からやり直す</button>
+        </div>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        // --- 状態管理 ---
+        let scores = {Ne:0, Ni:0, Se:0, Si:0, Te:0, Ti:0, Fe:0, Fi:0};
+        let logs = [];
+        let zinType = "";
+        
+        function logAction(msg) { logs.push(msg); }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = 1;
+            setTimeout(() => { t.style.opacity = 0; }, 3000);
+        }
+
+        // --- 画面遷移 ---
+        let currentPage = 0;
+        function goNext() {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage++;
+            if(currentPage >= 1 && currentPage <= 10) {
+                document.getElementById('progress-container').style.display = 'block';
+                document.getElementById('progress-text').innerText = `進捗: Part ${currentPage} / 10`;
+                document.getElementById('progress-fill').style.width = `${(currentPage/10)*100}%`;
+                
+                // 芋虫の表示管理
+                if(currentPage === 8) {
+                    document.getElementById('imomushi').style.display = 'block';
+                    startImomushiWalk();
+                } else {
+                    document.getElementById('imomushi').style.display = 'none';
+                }
+            } else {
+                document.getElementById('progress-container').style.display = 'none';
+                document.getElementById('imomushi').style.display = 'none';
+            }
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            window.scrollTo(0,0);
+            
+            if(currentPage === 11) calcResult();
+            
+            // ページ初期化処理
+            if(currentPage===2) p2_start = Date.now();
+            if(currentPage===3) initP3();
+            if(currentPage===6) initP6();
+            if(currentPage===9) initP9();
+        }
+
+        // --- Part 0 ---
+        function p0_ignore() {
+            zinType = document.getElementById('zin-input').value || "未入力";
+            scores.Te += 2; logAction("【Te】エラーを無視して目的を優先した"); goNext();
+        }
+        function p0_investigate() {
+            zinType = document.getElementById('zin-input').value || "未入力";
+            scores.Ti += 2; logAction("【Ti】エラーの原因を確認しようとした"); showToast("ドッキリ大成功！");
+            setTimeout(goNext, 1000);
+        }
+
+        // --- Part 1 ---
+        let p1_start_time = 0;
+        let p1_hints = 0;
+        function p1_start() {
+            p1_start_time = Date.now();
+            document.getElementById('p1-start-btn').style.display = 'none';
+            document.getElementById('p1-content').style.display = 'block';
+        }
+        function p1_hint() {
+            p1_hints++;
+            logAction("【Ni】ヒントを確認した");
+            const d = document.getElementById('p1-hints');
+            if(p1_hints === 1) d.innerText = "ヒント1：口から出るものです";
+            if(p1_hints === 2) d.innerText += "\nヒント2：『○○○』のキャッチボール";
+        }
+        function p1_submit() {
+            const a = document.getElementById('p1-ans').value;
+            const t = (Date.now() - p1_start_time) / 1000;
+            if(a.includes("言葉") || a.includes("ことば") || a.includes("コトバ")) {
+                if(p1_hints===0 && t<10) scores.Ni+=6;
+                else if(p1_hints===0) scores.Ni+=4;
+                else scores.Ni+=2;
+                logAction(`【Ni】閃きテスト正解！ (${t.toFixed(1)}秒 / ヒント${p1_hints}回)`);
+                showToast("大正解！"); setTimeout(goNext, 1000);
+            } else {
+                logAction(`【Ni】閃きテスト不正解 (回答: ${a})`);
+                showToast("不正解！正解は「言葉」でした！"); setTimeout(goNext, 1500);
+            }
+        }
+
+        // --- Part 2 ---
+        let p2_start = 0;
+        function p2_submit() {
+            const a = document.getElementById('p2-ans').value;
+            const t = (Date.now() - p2_start) / 1000;
+            const d_words = ["不可逆","無常","エントロピー","有限","終焉","退廃","サイクル","死","衰退","栄枯盛衰","輪廻","滅び"];
+            const c_words = ["時間","命","寿命","桜","時計","時の流れ","時間経過","変化","言霊"];
+            if(d_words.some(w => a.includes(w))) {
+                scores.Ni += 7; logAction(`【Ni】高度な抽象化テスト大正解！(${a} / ${t.toFixed(1)}秒)`);
+                showToast("素晴らしい！物理法則・哲学を完璧に捉えました！"); setTimeout(goNext, 1500);
+            } else if(c_words.some(w => a.includes(w))) {
+                if(t<5) { scores.Ni+=6; logAction(`【Ni】神速の直感で正解！(${a} / ${t.toFixed(1)}秒)`); showToast("神速の直感！"); }
+                else { scores.Ni+=3; logAction(`【Ni】抽象化正解。(${a} / ${t.toFixed(1)}秒)`); showToast("正解です！"); }
+                setTimeout(goNext, 1500);
+            } else {
+                logAction(`【Ni】抽象概念不正解 (${a})`);
+                showToast("不正解！正解は「時間」や「無常」でした"); setTimeout(goNext, 1500);
+            }
+        }
+
+        // --- Part 3 ---
+        let p3_tgt = 0, p3_mul = 0, p3_exp = 0;
+        function initP3() {
+            p3_tgt = Math.floor(Math.random()*70)+25;
+            p3_mul = Math.floor(Math.random()*5)+2;
+            document.getElementById('p3-target-disp').innerText = p3_tgt;
+            document.getElementById('p3-ans').placeholder = `入力が『 ${p3_tgt} 』の場合、出力は何になる？`;
+        }
+        function p3_test() {
+            const v = parseInt(document.getElementById('p3-in').value);
+            if(v === p3_tgt) { showToast(`⚠️ 本番クイズの数字『${p3_tgt}』は検証できません！`); return; }
+            let s = 0; String(v).split('').forEach(c => s+=parseInt(c));
+            let res = s * p3_mul;
+            if(p3_exp < 5) scores.Ti += 1.5;
+            p3_exp++;
+            logAction(`【Ti】BOXに『${v}』を入力して検証した`);
+            const h = document.getElementById('p3-history');
+            h.innerHTML += `<div>入力： ${v} 👉 出力： ${res}</div>`;
+        }
+        function p3_submit() {
+            const a = document.getElementById('p3-ans').value;
+            let s = 0; String(p3_tgt).split('').forEach(c => s+=parseInt(c));
+            let correct = String(s * p3_mul);
+            if(a === correct) {
+                scores.Ti += 2.5; logAction(`【Ti】法則を完璧に解明！(検証: ${p3_exp}回)`);
+                showToast("大正解！完璧に解明しました！"); setTimeout(goNext, 1500);
+            } else {
+                logAction(`【Ti】法則解明失敗 (回答: ${a} / 検証: ${p3_exp}回)`);
+                showToast(`残念！正解は『${correct}』でした。`); setTimeout(goNext, 1500);
+            }
+        }
+
+        // --- Part 4 ---
+        let p4_emps = [
+            {n: "従業員A", p: 95, t: 10, a: "R&D"}, {n: "従業員B", p: 30, t: 85, a: "Support"},
+            {n: "従業員C", p: 60, t: 40, a: "Sales"}, {n: "従業員D", p: 82, t: 75, a: "R&D"},
+            {n: "従業員E", p: 15, t: 90, a: "Support"}, {n: "従業員F", p: 70, t: 70, a: "Sales"},
+            {n: "従業員G", p: 90, t: 80, a: "R&D"}, {n: "従業員H", p: 50, t: 50, a: "Sales"}
+        ];
+        let p4_idx=0, p4_cor=0, p4_start_t=0;
+        function p4_start() {
+            p4_start_t = Date.now();
+            document.getElementById('p4-start-btn').style.display = 'none';
+            document.getElementById('p4-content').style.display = 'block';
+            p4_update();
+        }
+        function p4_update() {
+            if(p4_idx >= 8) {
+                let t = (Date.now() - p4_start_t)/1000;
+                let b = 0;
+                if(p4_cor>=6){ if(t<12) b=6.0; else if(t<16) b=4.0; else if(t<22) b=2.0; }
+                scores.Te += (p4_cor*0.4) + b;
+                logAction(`【Te】仕分け業務完了 (正解: ${p4_cor}/8名, タイム: ${t.toFixed(2)}秒)`);
+                showToast(`🎉 業務完了！(正解数: ${p4_cor})`); setTimeout(goNext, 1500);
+                return;
+            }
+            document.getElementById('p4-emp-name').innerText = `👤 被評価者: ${p4_emps[p4_idx].n} ( ${p4_idx+1}/8 )`;
+            document.getElementById('p4-emp-data').innerHTML = `📈 パフォーマンス: <b>${p4_emps[p4_idx].p}%</b> ｜ 🤝 協調性: <b>${p4_emps[p4_idx].t}%</b>`;
+        }
+        function p4_sort(ans) {
+            if(ans === p4_emps[p4_idx].a) p4_cor++;
+            p4_idx++; p4_update();
+        }
+
+        // --- Part 5 ---
+        let p5_lvl=1, p5_tgt="";
+        function p5_start() {
+            document.getElementById('p5-step-start').style.display = 'none';
+            p5_tgt = String(Math.floor(Math.random()*9000)+1000);
+            p5_play();
+        }
+        async function p5_play() {
+            document.getElementById('p5-step-show').style.display = 'block';
+            document.getElementById('p5-step-ans').style.display = 'none';
+            let d = document.getElementById('p5-display');
+            await new Promise(r => setTimeout(r, 500));
+            for(let c of p5_tgt) {
+                d.innerText = c; await new Promise(r => setTimeout(r, 400));
+                d.innerText = ""; await new Promise(r => setTimeout(r, 200));
+            }
+            document.getElementById('p5-step-show').style.display = 'none';
+            document.getElementById('p5-step-ans').style.display = 'block';
+            document.getElementById('p5-ans').value = "";
+        }
+        function p5_submit() {
+            if(document.getElementById('p5-ans').value === p5_tgt) {
+                scores.Si += 2.0; p5_lvl++; showToast(`正解！次はレベル${p5_lvl}！`);
+                p5_tgt = ""; for(let i=0;i<4+(p5_lvl-1)*2;i++) p5_tgt += Math.floor(Math.random()*10);
+                setTimeout(p5_play, 1000);
+            } else {
+                logAction(`【Si】記憶テスト終了 (到達レベル: ${p5_lvl})`);
+                showToast("❌ 残念！そこまで！"); setTimeout(goNext, 1500);
+            }
+        }
+
+        // --- Part 6 ---
+        let p6_ans = "";
+        function initP6() {
+            const arr = ["A","B","C","D"];
+            p6_ans = arr[Math.floor(Math.random()*4)];
+            let r=Math.floor(Math.random()*150)+50, g=Math.floor(Math.random()*150)+50, b=Math.floor(Math.random()*150)+50;
+            let c1 = `rgb(${r},${g},${b})`; let c2 = `rgb(${Math.min(255,r+18)},${g},${b})`;
+            let html = "";
+            for(let x of arr) {
+                let c = (x===p6_ans) ? c2 : c1;
+                html += `<div>
+                    <div style="background-color:${c}; height:80px; border-radius:5px; text-align:center; line-height:80px; color:white; font-size:24px; font-weight:bold;">${x}</div>
+                    <button class="btn" style="margin-top:5px;" onclick="p6_submit('${x}')">${x}を指差す</button>
+                </div>`;
+            }
+            document.getElementById('p6-tiles').innerHTML = html;
+        }
+        function p6_submit(ans) {
+            if(ans===p6_ans){ scores.Se+=0.5; logAction("【Se】色彩感覚テスト: 正解"); showToast("大正解！"); }
+            else { logAction(`【Se】色彩感覚テスト: 不正解`); showToast(`正解は『${p6_ans}』でした！`); }
+            setTimeout(goNext, 1500);
+        }
+
+        // --- Part 7 : Web Audio ドラム & チキン ---
+        let p7_d_count=0, p7_t_start=0, p7_t_state="start";
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+        function playDrum(type) {
+            initAudio(); p7_d_count++;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let t = audioCtx.currentTime;
+            if(type==='kick') {
+                osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.5);
+                gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+            } else if(type==='snare') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(250, t);
+                gain.gain.setValueAtTime(1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+            } else {
+                osc.type = 'square'; osc.frequency.setValueAtTime(800, t);
+                gain.gain.setValueAtTime(0.5, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            }
+            osc.start(t); osc.stop(t + 0.5);
+            document.getElementById('p7-emojis').innerText += ["🎵","🥁","🎶","🎷","💥","✨"][Math.floor(Math.random()*6)];
+        }
+        function p7_timerToggle() {
+            let b = document.getElementById('p7-timer-btn');
+            if(p7_t_state==="start") {
+                p7_t_start = Date.now(); p7_t_state="running";
+                b.innerText = "ストップ！"; b.classList.add("btn-danger");
+                document.getElementById('p7-timer-res').innerText = "⏱️ 計測中...";
+            } else if(p7_t_state==="running") {
+                let diff = (Date.now() - p7_t_start)/1000;
+                let err = Math.abs(10.0 - diff);
+                if(err<=0.15) scores.Se += 6.0; else if(err<=0.5) scores.Se += 3.0;
+                logAction(`【Se】チキンレース: ${diff.toFixed(2)}秒 (誤差 ${err.toFixed(2)}秒)`);
+                document.getElementById('p7-timer-res').innerText = `記録: ${diff.toFixed(2)}秒 (誤差 ${err.toFixed(2)}秒)`;
+                b.style.display="none"; document.getElementById('p7-next-btn').style.display="block";
+            }
+        }
+        function p7_next() {
+            logAction(`【Se】陽キャバスを ${p7_d_count}回 叩いた`);
+            scores.Se += Math.min(p7_d_count * 0.1, 5.0); goNext();
+        }
+
+        // --- Part 8 : 芋虫アニメーション ---
+        let imo_clicks=0, imo_crush=false, imo_pos=0, imo_dir=1, imo_req;
+        function startImomushiWalk() {
+            function walk() {
+                if(imo_crush || currentPage !== 8) return;
+                imo_pos += imo_dir * 0.4;
+                if(imo_pos > 90) imo_dir = -1; if(imo_pos < 0) imo_dir = 1;
+                let el = document.getElementById('imomushi');
+                el.style.left = imo_pos + '%';
+                el.style.transform = imo_dir===1 ? 'scaleX(-1)' : 'scaleX(1)';
+                imo_req = requestAnimationFrame(walk);
+            }
+            imo_req = requestAnimationFrame(walk);
+        }
+        function touchImomushi() {
+            if(currentPage !== 8 || imo_crush) return;
+            imo_clicks++;
+            let m = document.getElementById('p8-msg');
+            if(imo_clicks<5) m.innerText = "「何だね？私は考え事に耽りながら散歩中だ。」";
+            else if(imo_clicks<10) m.innerText = "「おいおい、むやみに触らないでくれたまえ。」";
+            else if(imo_clicks<15) m.innerText = "「……お前僕を怒らせたいのか？」";
+            else if(imo_clicks<25) m.innerText = "「しつこいな！お前、SLEか！？やめろ！」";
+            else if(imo_clicks<30) m.innerText = "「やめろと言っているだろう！や、やめ…！！」";
+            else {
+                imo_crush=true; cancelAnimationFrame(imo_req);
+                document.getElementById('imomushi').innerText = "💥";
+                m.innerHTML = "<span style='color:red;'>無残にも潰されてしまった…</span>";
+            }
+        }
+        function p8_next() {
+            if(imo_crush){ scores.Se+=3; scores.Te+=3; logAction("【Se/Te】芋虫を30回つついて無残にも潰した"); }
+            else { logAction(`【Se/Te】芋虫を ${imo_clicks}回 つついて放置した`); }
+            document.getElementById('imomushi').style.display = 'none';
+            goNext();
+        }
+
+        // --- Part 9 : Fe/Fi ---
+        let p9_fe=0, p9_fi=0;
+        let fi_words = ["空気読め","自己中","使えない","お前はダメだ","調子乗んな"];
+        function initP9() {
+            let html = "";
+            fi_words.forEach((w,i) => { html += `<button class="btn btn-danger" style="width:auto; padding:8px 15px;" id="fi-w-${i}" onclick="p9_fi_shoot(${i})">💥 ${w}</button>`; });
+            document.getElementById('p9-fi-btns').innerHTML = html;
+        }
+        function p9_fe_tap() {
+            p9_fe++; let d = document.getElementById('p9-fe-disp');
+            d.innerText += "🥺可哀想… ";
+        }
+        function p9_fi_shoot(i) {
+            p9_fi++; document.getElementById('p9-fi-count').innerText = p9_fi;
+            let nw = ["期待外れ","ノリ悪い","生意気","痛い奴","常識ない","言い訳すんな","やる気あんの？","自己満足","綺麗事"][Math.floor(Math.random()*9)];
+            document.getElementById(`fi-w-${i}`).innerText = `💥 ${nw}`;
+        }
+        function p9_next() {
+            let fe_s = p9_fe<=30 ? p9_fe*0.5 : 15.0; let se_fe = p9_fe<=30 ? 0 : (p9_fe-30)*0.2;
+            let fi_s = p9_fi<=30 ? p9_fi*0.5 : 15.0; let se_fi = p9_fi<=30 ? 0 : (p9_fi-30)*0.2;
+            scores.Fe += fe_s; scores.Fi += fi_s; scores.Se += (se_fe + se_fi);
+            logAction(`【Fe/Se】子犬に ${p9_fe}回 心を寄せた (Fe:+${fe_s}, 暴走Se:+${se_fe.toFixed(1)})`);
+            logAction(`【Fi/Se】悪口を ${p9_fi}個 撃ち落とした (Fi:+${fi_s}, 暴走Se:+${se_fi.toFixed(1)})`);
+            goNext();
+        }
+
+        // --- Part 10 ---
+        function p10_submit() {
+            let v = document.getElementById('p10-ans').value;
+            let w = v.split(/[、,]/).map(x=>x.trim()).filter(x=>x);
+            scores.Ne += Math.min(w.length * 0.5, 10.0);
+            logAction(`【Ne】連想単語を ${w.length}個 入力した`);
+            goNext();
+        }
+
+        // --- Part 11 : RESULT ---
+        const stacks = {
+            "INTJ": {Ni: 10, Te: 7, Fi: 1, Se: -3}, "INFJ": {Ni: 10, Fe: 7, Ti: 1, Se: -3},
+            "INTP": {Ti: 10, Ne: 7, Si: 1, Fe: -3}, "INFP": {Fi: 10, Ne: 7, Si: 1, Te: -3},
+            "ENTJ": {Te: 10, Ni: 7, Se: 1, Fi: -3}, "ENFJ": {Fe: 10, Ni: 7, Se: 1, Ti: -3},
+            "ENTP": {Ne: 10, Ti: 7, Fe: 1, Si: -3}, "ENFP": {Ne: 10, Fi: 7, Te: 1, Si: -3},
+            "ISTJ": {Si: 10, Te: 7, Fi: 1, Ne: -3}, "ISFJ": {Si: 10, Fe: 7, Ti: 1, Ne: -3},
+            "ISTP": {Ti: 10, Se: 7, Ni: 1, Fe: -3}, "ISFP": {Fi: 10, Se: 7, Ni: 1, Te: -3},
+            "ESTJ": {Te: 10, Si: 7, Ne: 1, Fi: -3}, "ESFJ": {Fe: 10, Si: 7, Ne: 1, Ti: -3},
+            "ESTP": {Se: 10, Ti: 7, Fe: 1, Ni: -3}, "ESFP": {Se: 10, Fi: 7, Te: 1, Ni: -3}
+        };
+        const descs = {
+            "INTJ": "独創的な戦略家。知識の裏にある構造(Ni)を愛し、矛盾がないよう完璧な整合性が取れるまで底なしに掘り進める合理型。",
+            "INFJ": "神秘的な理想主義者。人間の本質(Ni)を見抜き、温かい調和(Fe)をもたらす。内なる信念は極めて強固。",
+            "INTP": "探求熱心な論理学者。雑多な知識や新しい理論(Ne)を集め、独自の視点で遊ぶ。頭脳明晰なアイデアマン。",
+            "INFP": "情熱的な仲介者。自分だけの美学と倫理(Fi)を持ち、言葉や芸術(Ne)で世界を優しく表現する繊細な人。",
+            "ENTJ": "圧倒的な指導者。目標達成のための効率的なシステム(Te)を作り、ビジョン(Ni)に向かって全員を率いる。",
+            "ENFJ": "カリスマ的な対人教育者。場の調和と他者の成長(Fe)を促し、直感(Ni)で人を正しい方向へ導くリーダー。",
+            "ENTP": "知的な挑戦者。既存の常識を疑い、無限のアイデア(Ne)と論理(Ti)で新たな可能性を切り開く起業家肌。",
+            "ENFP": "自由奔放な活動家。パッションと豊かな発想(Ne)で人を巻き込み、自分に正直な価値観(Fi)を貫く愛されキャラ。",
+            "ISTJ": "質実健剛な努力家。過去の経験とデータ(Si)を重んじ、規則正しく確実な実務(Te)を淡々とこなす信頼の象徴。",
+            "ISFJ": "心優しい擁護者。周囲のニーズ(Fe)に繊細に気づき、日々の平穏とディテール(Si)を献身的に守り抜くサポーター。",
+            "ISTP": "冷静沈着な職人。機械や論理の仕組み(Ti)を解明し、極めて優れた現実的適応力(Se)で瞬時に問題を解決する。",
+            "ISFP": "感受性豊かな芸術家。自分の中の純粋な美学(Fi)を大切にし、目の前の現実(Se)をのびのびと楽しむ自由人。",
+            "ESTJ": "厳格な実務家。実績あるマニュアルと秩序(Si)を守り、組織を最も効率的にマネジメント(Te)する実力派。",
+            "ESFJ": "社交的なおもてなしのプロ。全員に配慮(Fe)を配り、確実な日常ルーティン(Si)をこなしてコミュニティを繋ぐ。",
+            "ESTP": "スリルを愛する冒険家。今この瞬間の刺激(Se)を全身で楽しみ、持ち前の冷静な論理(Ti)で難局を突破する駿敏な人。",
+            "ESFP": "お祭り騒ぎの主役。目の前の楽しさ(Se)を体現し、自分の『好き』(Fi)を全開にして周囲にポジティブなエネルギーを与える。"
+        };
+
+        let est_mbti = "";
+        let ranks_arr = [];
+        
+        function calcResult() {
+            document.getElementById('r-zin').innerText = zinType;
+            
+            // コサイン類似度
+            let res = [];
+            for(let m in stacks) {
+                let idl = stacks[m];
+                let dp=0, u_sq=0, i_sq=0;
+                for(let k in idl) {
+                    let u = scores[k]||0; let i = idl[k];
+                    dp += u*i; u_sq += u*u; i_sq += i*i;
+                }
+                let sim = (u_sq===0||i_sq===0) ? 0 : dp/(Math.sqrt(u_sq)*Math.sqrt(i_sq));
+                res.push({m: m, s: Math.max(0, sim)});
+            }
+            res.sort((a,b)=>b.s - a.s);
+            ranks_arr = res;
+            est_mbti = res[0].m;
+            
+            document.getElementById('r-mbti').innerText = "あなたの真のタイプ：" + est_mbti;
+            document.getElementById('r-desc').innerHTML = `💡 <b>【${est_mbti}の概要】</b><br>${descs[est_mbti]}`;
+            
+            // グラフ描画
+            let max_s = Math.max(...Object.values(scores), 1);
+            let gh = "";
+            for(let k in scores) {
+                let w = (scores[k]/max_s)*100;
+                gh += `<div style="display:flex; align-items:center; margin-bottom:10px;">
+                    <div style="width:40px; color:var(--neon); font-weight:bold;">${k}</div>
+                    <div style="flex-grow:1; background:#333; height:20px; border-radius:10px; margin:0 15px; overflow:hidden;">
+                        <div style="width:${w}%; background:var(--neon); height:100%; transition:width 1s;"></div>
+                    </div>
+                    <div style="width:40px; text-align:right;">${scores[k].toFixed(1)}</div>
+                </div>`;
+            }
+            document.getElementById('r-graph').innerHTML = gh;
+            
+            // ランキング描画
+            let rh = "";
+            for(let i=0; i<5; i++) {
+                rh += `<div style="font-size:18px; margin:10px 0;">👑 ${i+1}位: <b style="color:var(--neon);">${res[i].m}</b> <span style="color:#aaa; font-size:14px;">(一致度 ${(res[i].s*100).toFixed(1)}%)</span></div>`;
+            }
+            document.getElementById('r-ranking').innerHTML = rh;
+            
+            // ログ
+            document.getElementById('r-logs').value = logs.join("\n");
+            
+            // ダーリンちゃん
+            let z_up = zinType.toUpperCase();
+            let is_sp = z_up.includes("INTJ")||z_up.includes("LII")||z_up.includes("ILI");
+            let is_m = z_up.includes(est_mbti) || (est_mbti==="INTJ" && (z_up.includes("LII")||z_up.includes("ILI"))) || (est_mbti==="INTP" && (z_up.includes("LII")||z_up.includes("ILE")));
+            let dh = "";
+            if(is_sp) {
+                if(is_m) dh = `🥺『ダーリン♡ お望みの結果（${est_mbti}）が出たんじゃない？ ふふっ、私の大好きなLII（論理的一貫性を愛するダーリン）のことは、やっぱり全部お見通しなんだからね。……素直で、よろしいっ♡』`;
+                else dh = `🥺『あら、ダーリン♡ 自認（${zinType}）と違う結果（${est_mbti}）が出ちゃったね？ 一体どっちが本音で、どっちが演出なのかな〜？ ほんとはもっと、私の感情（Fe）インターフェースに揺さぶられたいくせに……ね？🥺』`;
+            } else {
+                if(is_m) dh = `🥺『ダーリン♡ お望みの結果（${est_mbti}）が出たんじゃない？ ふふ、やっぱりダーリンのことはお見通しなんだからね。素直でよろしいっ♡』`;
+                else dh = `🥺『ねぇ、ダーリン♡ 今のその反応、“本音”と“演出”どっちが多いと思う？🥺』`;
+            }
+            document.getElementById('r-darling').innerHTML = dh;
+            
+            // GAS自動送信 (mode: no-cors を使用してブロック回避)
+            const gas_url = "https://script.google.com/macros/s/AKfycby3mkiLQb-65eUQG0x_CuVO-amPwEbJypZK9-Ecp3zY-F5C-H7Qg2_2F1QCGEp_Lv5N_g/exec";
+            fetch(gas_url, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({mbti: est_mbti, zin: zinType, scores: scores, logs: logs.join("\n")})
+            }).then(() => showToast("📨 診断結果を送信しました！")).catch(e => console.log(e));
+        }
+
+        function copyLogs() {
+            navigator.clipboard.writeText(document.getElementById('r-logs').value).then(() => showToast("📋 ログをコピーしました！"));
+        }
+
+        function shareResult() {
+            if(navigator.share) {
+                navigator.share({
+                    title: '認知機能ダイブ・シミュレーター',
+                    text: `【診断結果】私の真のタイプは『${est_mbti}』でした！\n体感型・認知機能シミュレーター、あなたもやってみて！`,
+                    url: window.location.href
+                }).catch(e=>console.log(e));
+            } else {
+                showToast("お使いのブラウザは共有機能に非対応です。URLをコピーしてください！");
+            }
+        }
+        
+        function downloadCard() {
+            const cvs = document.getElementById('result-canvas');
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = '#1e1e1e'; ctx.fillRect(0,0,700,450);
+            ctx.strokeStyle = '#4CAF50'; ctx.lineWidth = 4; ctx.strokeRect(10,10,680,430);
+            ctx.fillStyle = '#888'; ctx.font = '20px sans-serif'; ctx.fillText('NEXT GENERATION MBTI CARD', 30, 40);
+            ctx.fillStyle = '#4CAF50'; ctx.font = 'bold 30px sans-serif'; ctx.fillText(`ESTIMATED: ${est_mbti}`, 30, 80);
+            ctx.fillStyle = '#FFF'; ctx.font = '16px sans-serif'; ctx.fillText(`Self-Assessed: ${zinType}`, 30, 110);
+            ctx.fillStyle = '#888'; ctx.fillText('TOP MATCHES:', 30, 160);
+            for(let i=0; i<3; i++) {
+                ctx.fillStyle = '#FFF'; ctx.fillText(`${i+1}. ${ranks_arr[i].m} (${(ranks_arr[i].s*100).toFixed(1)}%)`, 30, 190+(i*30));
+            }
+            ctx.fillStyle = '#888'; ctx.fillText('COGNITIVE FUNCTION GRAPH:', 320, 40);
+            let max_s = Math.max(...Object.values(scores), 1);
+            let y = 80;
+            for(let k in scores) {
+                ctx.fillStyle = '#FFF'; ctx.fillText(k, 320, y);
+                let w = (scores[k]/max_s)*250;
+                ctx.fillStyle = '#4CAF50'; ctx.fillRect(360, y-15, w, 16);
+                ctx.fillStyle = '#888'; ctx.fillText(scores[k].toFixed(1), 370+w, y-2);
+                y += 40;
+            }
+            const a = document.createElement('a');
+            a.href = cvs.toDataURL("image/png");
+            a.download = `mbti_result_${est_mbti}.png`;
+            a.click();
+        }
+    </script>
 </body>
 </html>
